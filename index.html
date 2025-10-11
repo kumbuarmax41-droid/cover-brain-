@@ -1,9 +1,9 @@
-<meta name='viewport' content='width=device-width, initial-scale=1'/><meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cover Brain - Plateforme de Répétiteurs RDC</title>
+    <title>Cover Brain - Plateforme de Répétiteurs</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Firebase SDK -->
@@ -19,7 +19,7 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         :root {
             --primary: #4a6fa5;
             --secondary: #ffc107;
@@ -30,7 +30,7 @@
             --info: #17a2b8;
             --warning: #ffc107;
         }
-        
+
         body {
             background-color: var(--light);
             color: #333;
@@ -47,6 +47,11 @@
 
         .hidden {
             display: none !important;
+        }
+
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
         }
 
         /* ===== HEADER ===== */
@@ -79,32 +84,69 @@
             color: var(--secondary);
         }
 
-        nav ul {
+        /* ===== NAVIGATION AMÉLIORÉE ===== */
+        .main-nav {
             display: flex;
-            list-style: none;
-            gap: 20px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
-        nav ul li {
+        .nav-tab {
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            color: white;
+            font-weight: 500;
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .nav-tab.active {
+            background: var(--secondary);
+            color: #333;
+        }
+
+        .more-dropdown {
             position: relative;
         }
 
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 8px 12px;
-            border-radius: 5px;
+        .more-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            min-width: 200px;
+            display: none;
+            z-index: 1000;
         }
 
-        nav ul li a:hover {
-            background: rgba(255,255,255,0.1);
-            color: var(--secondary);
+        .more-menu.show {
+            display: block;
+        }
+
+        .more-menu a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--dark);
+            text-decoration: none;
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s;
+        }
+
+        .more-menu a:hover {
+            background: #f8f9fa;
+            color: var(--primary);
+        }
+
+        .more-menu a:last-child {
+            border-bottom: none;
         }
 
         .user-info {
@@ -133,22 +175,23 @@
 
         /* ===== HERO SECTION ===== */
         .hero {
-            background: linear-gradient(135deg, var(--primary) 0%, #2c5282 100%);
+            background: linear-gradient(rgba(74, 111, 165, 0.8), rgba(74, 111, 165, 0.9)), url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
             color: white;
             padding: 5rem 0;
             text-align: center;
         }
 
         .hero h1 {
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: 1.5rem;
         }
 
         .hero p {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             max-width: 700px;
             margin: 0 auto 2.5rem;
-            opacity: 0.9;
         }
 
         /* ===== BUTTONS ===== */
@@ -189,24 +232,19 @@
             color: white;
         }
 
-        .btn-info {
-            background-color: var(--info);
+        .btn-whatsapp {
+            background-color: #25D366;
             color: white;
-        }
-
-        .btn-warning {
-            background-color: var(--warning);
-            color: #333;
         }
 
         /* ===== SECTIONS ===== */
         .section {
-            padding: 5rem 0;
+            padding: 3rem 0;
         }
 
         .section-title {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 2rem;
             color: var(--primary);
             position: relative;
         }
@@ -250,76 +288,6 @@
             border-radius: 0 8px 8px 0;
             cursor: pointer;
             font-size: 1.1rem;
-        }
-
-        /* ===== FORMS ===== */
-        .form-container {
-            background-color: white;
-            max-width: 600px;
-            margin: 2rem auto;
-            padding: 2.5rem;
-            border-radius: 12px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-
-        .form-group {
-            margin-bottom: 1.8rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.7rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-
-        textarea.form-control {
-            min-height: 120px;
-            resize: vertical;
-        }
-
-        .user-type {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 2rem;
-        }
-
-        .user-type label {
-            flex: 1;
-            text-align: center;
-            padding: 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .user-type input[type="radio"] {
-            display: none;
-        }
-
-        .user-type input[type="radio"]:checked + span {
-            background-color: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .user-type span {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: 500;
         }
 
         /* ===== CARDS ===== */
@@ -395,7 +363,7 @@
 
         .cart-items {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 1.5rem;
             margin-top: 1.5rem;
         }
@@ -444,6 +412,14 @@
             background-color: var(--danger);
         }
 
+        .contact-info {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            border: 1px solid #e9ecef;
+        }
+
         /* ===== COMMENT SYSTEM ===== */
         .comments-section {
             background-color: white;
@@ -487,6 +463,71 @@
             margin-top: 2rem;
         }
 
+        /* ===== FORMS ===== */
+        .form-container {
+            background-color: white;
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.8rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.7rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .user-type {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 2rem;
+        }
+
+        .user-type label {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .user-type input[type="radio"] {
+            display: none;
+        }
+
+        .user-type input[type="radio"]:checked + span {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .user-type span {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
         /* ===== PAYMENT INFO ===== */
         .payment-info {
             background: linear-gradient(135deg, #fff3cd, #ffeaa7);
@@ -502,6 +543,19 @@
             display: flex;
             align-items: center;
             gap: 10px;
+        }
+
+        /* ===== PRICE TAG ===== */
+        .price-tag {
+            background: linear-gradient(135deg, var(--secondary), #e0a800);
+            color: #333;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 10px;
         }
 
         /* ===== MODALS ===== */
@@ -575,103 +629,6 @@
             border-left-color: var(--info);
         }
 
-        /* ===== PRICE TAG ===== */
-        .price-tag {
-            background: linear-gradient(135deg, var(--secondary), #e0a800);
-            color: #333;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: 10px;
-        }
-
-        /* ===== ADMIN PANEL ===== */
-        .stats-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            margin: 25px 0;
-        }
-
-        .stats-column {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 2px solid #e9ecef;
-        }
-
-        .stats-column h3 {
-            color: var(--primary);
-            margin-bottom: 1.2rem;
-            text-align: center;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--secondary);
-        }
-
-        .user-list, .comments-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .user-item, .comment-admin-item {
-            padding: 12px 15px;
-            border-bottom: 1px solid #dee2e6;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .user-item:hover, .comment-admin-item:hover {
-            background-color: #e9ecef;
-        }
-
-        .user-item:last-child, .comment-admin-item:last-child {
-            border-bottom: none;
-        }
-
-        .user-name {
-            font-weight: 600;
-        }
-
-        .user-phone {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        /* ===== EDITOR ===== */
-        .editor-container {
-            margin: 20px 0;
-        }
-
-        .editor-toolbar {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .editor-content {
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 1.5rem;
-            min-height: 200px;
-            background: white;
-        }
-
-        /* ===== ABOUT SECTION ===== */
-        .about-section {
-            max-width: 900px;
-            margin: 3rem auto;
-            text-align: left;
-            background: white;
-            padding: 3rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
         /* ===== FOOTER ===== */
         footer {
             background: linear-gradient(135deg, var(--dark), #2d3748);
@@ -707,37 +664,33 @@
                 flex-direction: column;
                 gap: 15px;
             }
-            
-            nav ul {
+
+            .main-nav {
                 justify-content: center;
             }
-            
+
             .hero h1 {
                 font-size: 2.2rem;
             }
-            
+
             .search-form {
                 flex-direction: column;
             }
-            
+
             .search-input {
                 border-radius: 8px;
                 margin-bottom: 10px;
             }
-            
+
             .search-btn {
                 border-radius: 8px;
                 padding: 15px;
             }
-            
+
             .user-type {
                 flex-direction: column;
             }
-            
-            .stats-container {
-                grid-template-columns: 1fr;
-            }
-            
+
             .modal-content {
                 padding: 1.5rem;
                 margin: 20px;
@@ -754,211 +707,230 @@
                     <i class="fas fa-brain"></i>
                     Cover<span>Brain</span>
                 </div>
-                <nav>
-                    <ul>
-                        <li><a href="#accueil"><i class="fas fa-home"></i> Accueil</a></li>
-                        <li id="navSearchItem" class="hidden"><a href="#recherche" id="navSearch"><i class="fas fa-search"></i> Recherche</a></li>
-                        <li id="navCartItem" class="hidden"><a href="#panier" id="navCart"><i class="fas fa-shopping-cart"></i> Panier <span id="cartBadge" class="notification-badge hidden">0</span></a></li>
-                        <li id="navProfileItem" class="hidden"><a href="#profil" id="navProfile"><i class="fas fa-user-edit"></i> Profil</a></li>
-                        <li><a href="#commentaires"><i class="fas fa-comments"></i> Commentaires</a></li>
-                        <li><a href="#inscription"><i class="fas fa-user-plus"></i> S'inscrire</a></li>
-                        <li id="userNavItem" class="hidden">
-                            <div class="user-info">
-                                <i class="fas fa-user"></i>
-                                <span id="userName"></span>
-                            </div>
-                        </li>
-                        <li id="loginNavItem">
-                            <a href="#" id="loginLink"><i class="fas fa-sign-in-alt"></i> Connexion</a>
-                        </li>
-                        <li id="logoutNavItem" class="hidden">
-                            <a href="#" id="logoutLink"><i class="fas fa-sign-out-alt"></i> Déconnexion</a>
-                        </li>
-                    </ul>
-                </nav>
+                
+                <div class="main-nav">
+                    <button class="nav-tab active" data-tab="accueil">Accueil</button>
+                    <button class="nav-tab" data-tab="recherche" id="navSearchTab">Recherche</button>
+                    <button class="nav-tab" data-tab="panier" id="navCartTab">Panier <span id="cartBadge" class="notification-badge hidden">0</span></button>
+                    <button class="nav-tab" data-tab="profil" id="navProfileTab">Profil</button>
+                    
+                    <div class="more-dropdown">
+                        <button class="nav-tab" id="moreTab">
+                            Plus <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="more-menu" id="moreMenu">
+                            <a href="#commentaires">Commentaires</a>
+                            <a href="#inscription">S'inscrire</a>
+                            <a href="#about">À propos</a>
+                        </div>
+                    </div>
+                    
+                    <div id="userNavItem" class="hidden">
+                        <div class="user-info">
+                            <i class="fas fa-user"></i>
+                            <span id="userName"></span>
+                        </div>
+                    </div>
+                    
+                    <button class="nav-tab" id="loginNavItem">Connexion</button>
+                    <button class="nav-tab hidden" id="logoutNavItem">Déconnexion</button>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- ===== HERO SECTION ===== -->
-    <section class="hero" id="accueil">
-        <div class="container">
-            <h1>Cover Brain - Excellence Éducative</h1>
-            <p>La première plateforme congolaise de mise en relation élèves-répétiteurs</p>
-            <a href="#inscription" class="btn btn-primary">Commencer Maintenant</a>
-        </div>
-    </section>
-
-    <!-- ===== SEARCH SECTION ===== -->
-    <section class="search-section hidden" id="recherche">
-        <div class="container">
-            <h2 class="section-title">Rechercher un Professeur</h2>
-            <form class="search-form" id="searchForm">
-                <input type="text" class="search-input" id="searchInput" placeholder="Mathématiques, Physique, Français...">
-                <button type="submit" class="search-btn"><i class="fas fa-search"></i> Rechercher</button>
-            </form>
-        </div>
-    </section>
-
-    <!-- ===== CART SECTION ===== -->
-    <section class="section hidden" id="panier">
-        <div class="container">
-            <h2 class="section-title" id="cartTitle">Mon Espace Personnel</h2>
-            <div id="cartContainer"></div>
-        </div>
-    </section>
-
-    <!-- ===== PROFILE SECTION ===== -->
-    <section class="section hidden" id="profil">
-        <div class="container">
-            <div class="form-container">
-                <h2 class="section-title">Mon Profil</h2>
-                <div id="profileFormContainer"></div>
+    <!-- ===== MAIN CONTENT ===== -->
+    <main>
+        <!-- ===== HERO SECTION ===== -->
+        <section class="hero" id="accueil">
+            <div class="container">
+                <h1>Trouvez le répétiteur idéal pour réussir</h1>
+                <p>Cover Brain connecte les élèves avec des répétiteurs qualifiés pour un soutien scolaire personnalisé à domicile.</p>
+                <p><strong>Une innovation Xtronics</strong></p>
+                <a href="#inscription" class="btn">Commencer maintenant</a>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ===== COMMENTS SECTION ===== -->
-    <section class="section" id="commentaires">
-        <div class="container">
-            <h2 class="section-title">Espace Commentaires</h2>
-            <div class="comments-section">
-                <div id="commentsContainer">
-                    <!-- Commentaires chargés dynamiquement -->
+        <!-- ===== SEARCH SECTION ===== -->
+        <section class="search-section hidden" id="recherche">
+            <div class="container">
+                <h2 class="section-title">Trouvez un répétiteur</h2>
+                <form class="search-form" id="searchForm">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Rechercher un cours (ex: Mathématiques, Physique, Anglais...)">
+                    <button type="submit" class="search-btn"><i class="fas fa-search"></i> Rechercher</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ===== RESULTS SECTION ===== -->
+        <section class="section results hidden" id="resultsSection">
+            <div class="container">
+                <h2 class="section-title" id="resultsTitle">Résultats de Recherche</h2>
+                <div id="resultsContainer"></div>
+            </div>
+        </section>
+
+        <!-- ===== CART SECTION ===== -->
+        <section class="section hidden" id="panier">
+            <div class="container">
+                <h2 class="section-title" id="cartTitle">Mon Espace Personnel</h2>
+                <div id="cartContainer"></div>
+            </div>
+        </section>
+
+        <!-- ===== PROFILE SECTION ===== -->
+        <section class="section hidden" id="profil">
+            <div class="container">
+                <div class="form-container">
+                    <h2 class="section-title">Mon Profil</h2>
+                    <div id="profileFormContainer"></div>
                 </div>
-                
-                <div class="comment-form">
-                    <h3>Laisser un commentaire</h3>
-                    <form id="commentForm">
+            </div>
+        </section>
+
+        <!-- ===== REGISTRATION SECTION ===== -->
+        <section class="section" id="inscription">
+            <div class="container">
+                <h2 class="section-title">Rejoindre Cover Brain</h2>
+                <div class="form-container">
+                    <div id="formAlert" class="alert hidden"></div>
+                    <div class="user-type">
+                        <label>
+                            <input type="radio" name="userType" value="student" checked>
+                            <span><i class="fas fa-user-graduate"></i> Élève</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="userType" value="teacher">
+                            <span><i class="fas fa-chalkboard-teacher"></i> Professeur</span>
+                        </label>
+                    </div>
+
+                    <!-- Student Form -->
+                    <form id="studentForm">
                         <div class="form-group">
-                            <label for="commentAuthor">Votre nom</label>
-                            <input type="text" id="commentAuthor" class="form-control" required>
+                            <label for="studentName">Nom complet</label>
+                            <input type="text" id="studentName" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label for="commentText">Votre message</label>
-                            <textarea id="commentText" class="form-control" placeholder="Partagez votre expérience avec Cover Brain..." required></textarea>
+                            <label for="studentPhone">Numéro de téléphone</label>
+                            <input type="tel" id="studentPhone" class="form-control" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane"></i> Publier le commentaire
-                        </button>
+                        <div class="form-group">
+                            <label for="studentLevel">Niveau scolaire</label>
+                            <select id="studentLevel" class="form-control" required>
+                                <option value="">Sélectionnez</option>
+                                <option value="primaire">Primaire (5$/séance)</option>
+                                <option value="secondaire">Secondaire (7$/séance)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentClass">Classe</label>
+                            <input type="text" id="studentClass" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentSchool">Établissement</label>
+                            <input type="text" id="studentSchool" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentAge">Âge</label>
+                            <input type="number" id="studentAge" class="form-control" min="5" max="25" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentAddress">Adresse de domicile</label>
+                            <input type="text" id="studentAddress" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentPassword">Mot de passe</label>
+                            <input type="password" id="studentPassword" class="form-control" minlength="6" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">S'inscrire</button>
+                    </form>
+
+                    <!-- Teacher Form -->
+                    <form id="teacherForm" class="hidden">
+                        <div class="payment-info">
+                            <h4><i class="fas fa-info-circle"></i> Conditions des Professeurs</h4>
+                            <p><strong>Commission :</strong> 10% des revenus mensuels</p>
+                            <p><strong>Paiement :</strong> Orange Money au +243 840426427</p>
+                            <p><strong>Attention :</strong> Les mauvais payeurs seront bannis</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="teacherName">Nom complet</label>
+                            <input type="text" id="teacherName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="teacherPhone">Numéro de téléphone</label>
+                            <input type="tel" id="teacherPhone" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="teacherSubjects">Matières enseignées</label>
+                            <input type="text" id="teacherSubjects" class="form-control" placeholder="Mathématiques, Physique..." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="teacherClass">Niveaux enseignés</label>
+                            <input type="text" id="teacherClass" class="form-control" placeholder="Primaire, Collège..." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="teacherSchool">Établissement / Formation</label>
+                            <input type="text" id="teacherSchool" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="teacherAddress">Adresse de domicile</label>
+                            <input type="text" id="teacherAddress" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="maxStudents">Nombre max d'élèves</label>
+                            <input type="number" id="maxStudents" class="form-control" min="1" max="20" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="teacherPassword">Mot de passe</label>
+                            <input type="password" id="teacherPassword" class="form-control" minlength="6" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">S'inscrire</button>
                     </form>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ===== REGISTRATION SECTION ===== -->
-    <section class="section" id="inscription">
-        <div class="container">
-            <h2 class="section-title">Rejoindre Cover Brain</h2>
-            <div class="form-container">
-                <div id="formAlert" class="alert hidden"></div>
-                
-                <div class="user-type">
-                    <label>
-                        <input type="radio" name="userType" value="student" checked>
-                        <span><i class="fas fa-user-graduate"></i> Élève</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="userType" value="teacher">
-                        <span><i class="fas fa-chalkboard-teacher"></i> Professeur</span>
-                    </label>
+        <!-- ===== COMMENTS SECTION ===== -->
+        <section class="section" id="commentaires">
+            <div class="container">
+                <h2 class="section-title">Espace Commentaires</h2>
+                <div class="comments-section">
+                    <div id="commentsContainer">
+                        <!-- Commentaires chargés dynamiquement -->
+                    </div>
+                    <div class="comment-form">
+                        <h3>Laisser un commentaire</h3>
+                        <form id="commentForm">
+                            <div class="form-group">
+                                <label for="commentAuthor">Votre nom</label>
+                                <input type="text" id="commentAuthor" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="commentText">Votre message</label>
+                                <textarea id="commentText" class="form-control" placeholder="Partagez votre expérience avec Cover Brain..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Publier le commentaire
+                            </button>
+                        </form>
+                    </div>
                 </div>
-
-                <!-- Student Form -->
-                <form id="studentForm">
-                    <div class="form-group">
-                        <label for="studentName">Nom complet</label>
-                        <input type="text" id="studentName" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="studentPhone">Numéro de téléphone</label>
-                        <input type="tel" id="studentPhone" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="studentLevel">Niveau scolaire</label>
-                        <select id="studentLevel" class="form-control" required>
-                            <option value="">Sélectionnez</option>
-                            <option value="primaire">Primaire (5$/séance)</option>
-                            <option value="secondaire">Secondaire (7$/séance)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="studentClass">Classe</label>
-                        <input type="text" id="studentClass" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="studentSchool">Établissement</label>
-                        <input type="text" id="studentSchool" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="studentAge">Âge</label>
-                        <input type="number" id="studentAge" class="form-control" min="5" max="25" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="studentPassword">Mot de passe</label>
-                        <input type="password" id="studentPassword" class="form-control" minlength="6" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">S'inscrire</button>
-                </form>
-
-                <!-- Teacher Form -->
-                <form id="teacherForm" class="hidden">
-                    <div class="payment-info">
-                        <h4><i class="fas fa-info-circle"></i> Conditions des Professeurs</h4>
-                        <p><strong>Commission :</strong> 10% des revenus mensuels</p>
-                        <p><strong>Paiement :</strong> Orange Money au +243 840426427</p>
-                        <p><strong>Attention :</strong> Les mauvais payeurs seront bannis</p>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="teacherName">Nom complet</label>
-                        <input type="text" id="teacherName" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="teacherPhone">Numéro de téléphone</label>
-                        <input type="tel" id="teacherPhone" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="teacherSubjects">Matières enseignées</label>
-                        <input type="text" id="teacherSubjects" class="form-control" placeholder="Mathématiques, Physique..." required>
-                    </div>
-                    <div class="form-group">
-                        <label for="teacherClass">Niveaux enseignés</label>
-                        <input type="text" id="teacherClass" class="form-control" placeholder="Primaire, Collège..." required>
-                    </div>
-                    <div class="form-group">
-                        <label for="maxStudents">Nombre max d'élèves</label>
-                        <input type="number" id="maxStudents" class="form-control" min="1" max="20" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="teacherPassword">Mot de passe</label>
-                        <input type="password" id="teacherPassword" class="form-control" minlength="6" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">S'inscrire</button>
-                </form>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- ===== RESULTS SECTION ===== -->
-    <section class="section results hidden" id="resultsSection">
-        <div class="container">
-            <h2 class="section-title" id="resultsTitle">Résultats de Recherche</h2>
-            <div id="resultsContainer"></div>
-        </div>
-    </section>
-
-    <!-- ===== ABOUT SECTION ===== -->
-    <section class="section" id="about">
-        <div class="container">
-            <div class="about-section">
-                <h3>À Propos de Cover Brain</h3>
-                <p>Cover Brain est la première plateforme congolaise dédiée à la mise en relation entre élèves et répétiteurs qualifiés.</p>
-                <p><strong>Contact WhatsApp : +243 840426427</strong></p>
+        <!-- ===== ABOUT SECTION ===== -->
+        <section class="section" id="about">
+            <div class="container">
+                <div class="about-section">
+                    <h3>À Propos de Cover Brain</h3>
+                    <p>Cover Brain est la première plateforme congolaise dédiée à la mise en relation entre élèves et répétiteurs qualifiés.</p>
+                    <p><strong>Contact WhatsApp : +243 840426427</strong></p>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
     <!-- ===== FOOTER ===== -->
     <footer>
@@ -973,7 +945,7 @@
         </div>
     </footer>
 
-    <!-- ===== LOGIN MODAL ===== -->
+    <!-- ===== MODALS ===== -->
     <div class="modal" id="loginModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -993,188 +965,27 @@
         </div>
     </div>
 
-    <!-- ===== ADMIN MODAL ===== -->
-    <div class="modal" id="adminModal">
-        <div class="modal-content modal-wide">
-            <div class="modal-header">
-                <h2>Panneau d'Administration</h2>
-                <button class="close-btn" id="closeModal">&times;</button>
-            </div>
-            
-            <!-- Statistics -->
-            <div class="stats-container">
-                <div class="stats-column">
-                    <h3><i class="fas fa-chalkboard-teacher"></i> Professeurs (<span id="teachersCount">0</span>)</h3>
-                    <div class="user-list" id="teachersList"></div>
-                </div>
-                <div class="stats-column">
-                    <h3><i class="fas fa-user-graduate"></i> Élèves (<span id="studentsCount">0</span>)</h3>
-                    <div class="user-list" id="studentsList"></div>
-                </div>
-            </div>
-
-            <!-- Comments Management -->
-            <div class="stats-container">
-                <div class="stats-column">
-                    <h3><i class="fas fa-comments"></i> Commentaires Récents</h3>
-                    <div class="comments-list" id="adminCommentsList"></div>
-                </div>
-            </div>
-            
-            <!-- Ban User -->
-            <div class="form-group">
-                <label for="userToBan">Utilisateur à bannir</label>
-                <input type="text" id="userToBan" class="form-control">
-            </div>
-            <button class="btn btn-danger" id="banUser">Bannir</button>
-        </div>
-    </div>
-
     <script>
         // ===== FIREBASE CONFIGURATION =====
         const firebaseConfig = {
-            // REMPLACE AVEC TES VRAIES CLÉS FIREBASE
-            apiKey: "AIzaSyD76gGADavpg-yfGKMbCDjSpgjoJir0-iA",
-            authDomain: "cover-brain.firebaseapp.com",
-            projectId: "cover-brain",
-            storageBucket: "cover-brain.firebasestorage.app",
-            messagingSenderId: "681699099519",
-            appId: "1:681699099519:web:0a17a05edad1092c7dd04a"
+            apiKey: "AIzaSyAglsqHPVXXXEl0rfTyu793gKqo9A9ZO6s",
+            authDomain: "cover-brain-f0732.firebaseapp.com",
+            projectId: "cover-brain-f0732",
+            storageBucket: "cover-brain-f0732.firebasestorage.app",
+            messagingSenderId: "501343145001",
+            appId: "1:501343145001:web:def3a1659b2f0411512038"
         };
 
         // ===== FIREBASE INITIALIZATION =====
         try {
             firebase.initializeApp(firebaseConfig);
+            console.log("✅ Firebase initialisé avec succès!");
         } catch (error) {
             console.log("Firebase déjà initialisé");
         }
 
         const db = firebase.firestore();
         const auth = firebase.auth();
-
-        // ===== DATABASE STRUCTURE =====
-        const coverBrainDB = {
-            // Collections locales pour le prototype
-            users: JSON.parse(localStorage.getItem('coverBrainUsers')) || [],
-            students: JSON.parse(localStorage.getItem('coverBrainStudents')) || [],
-            teachers: JSON.parse(localStorage.getItem('coverBrainTeachers')) || [],
-            invitations: JSON.parse(localStorage.getItem('coverBrainInvitations')) || [],
-            comments: JSON.parse(localStorage.getItem('coverBrainComments')) || [],
-
-            // Sauvegarde
-            save() {
-                localStorage.setItem('coverBrainUsers', JSON.stringify(this.users));
-                localStorage.setItem('coverBrainStudents', JSON.stringify(this.students));
-                localStorage.setItem('coverBrainTeachers', JSON.stringify(this.teachers));
-                localStorage.setItem('coverBrainInvitations', JSON.stringify(this.invitations));
-                localStorage.setItem('coverBrainComments', JSON.stringify(this.comments));
-            },
-
-            // Génération d'ID
-            generateId() {
-                return 'id_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-            },
-
-            // Recherche utilisateur
-            findUserByPhone(phone) {
-                return this.users.find(u => u.phone === phone);
-            },
-
-            findStudentByUserId(userId) {
-                return this.students.find(s => s.userId === userId);
-            },
-
-            findTeacherByUserId(userId) {
-                return this.teachers.find(t => t.userId === userId);
-            },
-
-            // Gestion des invitations
-            addInvitation(studentId, teacherId) {
-                const invitation = {
-                    id: this.generateId(),
-                    studentId,
-                    teacherId,
-                    status: 'pending',
-                    createdAt: new Date()
-                };
-                this.invitations.push(invitation);
-                this.save();
-                return invitation;
-            },
-
-            getInvitationsByTeacher(teacherId) {
-                return this.invitations.filter(inv => inv.teacherId === teacherId);
-            },
-
-            getInvitationsByStudent(studentId) {
-                return this.invitations.filter(inv => inv.studentId === studentId);
-            },
-
-            updateInvitationStatus(invitationId, status) {
-                const invitation = this.invitations.find(inv => inv.id === invitationId);
-                if (invitation) {
-                    invitation.status = status;
-                    invitation.updatedAt = new Date();
-                    this.save();
-                }
-            },
-
-            // Gestion des commentaires
-            addComment(author, text) {
-                const comment = {
-                    id: this.generateId(),
-                    author,
-                    text,
-                    createdAt: new Date(),
-                    approved: true
-                };
-                this.comments.push(comment);
-                this.save();
-                return comment;
-            },
-
-            getComments() {
-                return this.comments.filter(comment => comment.approved).sort((a, b) => 
-                    new Date(b.createdAt) - new Date(a.createdAt)
-                );
-            },
-
-            getAllComments() {
-                return this.comments.sort((a, b) => 
-                    new Date(b.createdAt) - new Date(a.createdAt)
-                );
-            },
-
-            // Recherche
-            searchTeachers(searchTerm) {
-                return this.teachers.filter(teacher => {
-                    const user = this.users.find(u => u.id === teacher.userId);
-                    if (!user || user.banned) return false;
-
-                    const searchLower = searchTerm.toLowerCase();
-                    return (
-                        teacher.subjects.some(s => s.toLowerCase().includes(searchLower)) ||
-                        teacher.name.toLowerCase().includes(searchLower)
-                    );
-                });
-            },
-
-            // Admin
-            getAllUsers() {
-                return {
-                    teachers: this.teachers,
-                    students: this.students
-                };
-            },
-
-            banUser(userId) {
-                const user = this.users.find(u => u.id === userId);
-                if (user) {
-                    user.banned = true;
-                    this.save();
-                }
-            }
-        };
 
         // ===== GLOBAL VARIABLES =====
         let currentUser = JSON.parse(localStorage.getItem('coverBrainCurrentUser')) || null;
@@ -1185,15 +996,27 @@
             initializeApp();
         });
 
-        function initializeApp() {
+        async function initializeApp() {
             setupEventListeners();
+            setupNavigation();
             checkLoginStatus();
-            createDefaultAdmin();
-            loadComments();
+            await createDefaultAdmin();
+            await loadComments();
+            console.log("✅ Application Cover Brain initialisée");
         }
 
         function setupEventListeners() {
-            // Gestion des formulaires
+            // Navigation
+            document.getElementById('moreTab').addEventListener('click', function(e) {
+                e.stopPropagation();
+                document.getElementById('moreMenu').classList.toggle('show');
+            });
+
+            document.addEventListener('click', function() {
+                document.getElementById('moreMenu').classList.remove('show');
+            });
+
+            // Inscriptions
             document.querySelectorAll('input[name="userType"]').forEach(radio => {
                 radio.addEventListener('change', function() {
                     const isStudent = this.value === 'student';
@@ -1202,7 +1025,6 @@
                 });
             });
 
-            // Inscriptions
             document.getElementById('studentForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 registerStudent();
@@ -1223,41 +1045,91 @@
             document.getElementById('searchForm').addEventListener('submit', function(e) {
                 e.preventDefault();
                 const searchTerm = document.getElementById('searchInput').value.trim();
+                
+                if (!searchTerm) {
+                    showAlert('formAlert', 'Veuillez entrer un terme de recherche', 'danger');
+                    return;
+                }
+
                 if (searchTerm.toUpperCase() === 'DENVER' && currentUser?.type === 'admin') {
                     showAdminPanel();
                     return;
                 }
+                
                 searchTeachers(searchTerm);
             });
 
             // Authentification
-            document.getElementById('loginLink').addEventListener('click', function(e) {
+            document.getElementById('loginNavItem').addEventListener('click', function(e) {
                 e.preventDefault();
                 document.getElementById('loginModal').style.display = 'flex';
             });
 
             document.getElementById('loginBtn').addEventListener('click', loginUser);
-            document.getElementById('logoutLink').addEventListener('click', logoutUser);
-
-            // Navigation
-            document.getElementById('navCart').addEventListener('click', showCart);
-            document.getElementById('navProfile').addEventListener('click', showProfile);
-
-            // Admin
-            document.getElementById('banUser').addEventListener('click', banUser);
+            document.getElementById('logoutNavItem').addEventListener('click', logoutUser);
 
             // Fermeture modals
             document.getElementById('closeLoginModal').addEventListener('click', function() {
                 document.getElementById('loginModal').style.display = 'none';
             });
+        }
 
-            document.getElementById('closeModal').addEventListener('click', function() {
-                document.getElementById('adminModal').style.display = 'none';
+        function setupNavigation() {
+            // Gestion des onglets
+            document.querySelectorAll('.nav-tab[data-tab]').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    showTab(tabId);
+                });
+            });
+
+            // Navigation "Plus"
+            document.querySelectorAll('.more-menu a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    showTab(targetId);
+                    document.getElementById('moreMenu').classList.remove('show');
+                });
             });
         }
 
-        // ===== INSCRIPTIONS =====
-        function registerStudent() {
+        function showTab(tabId) {
+            // Masquer toutes les sections
+            document.querySelectorAll('section').forEach(section => {
+                section.classList.add('hidden');
+            });
+
+            // Désactiver tous les onglets
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Activer l'onglet correspondant
+            const activeTab = document.querySelector(`[data-tab="${tabId}"]`);
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+
+            // Afficher la section correspondante
+            const targetSection = document.getElementById(tabId);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+            }
+
+            // Actions spécifiques selon l'onglet
+            if (tabId === 'panier') {
+                showCart();
+            } else if (tabId === 'profil') {
+                showProfile();
+            } else if (tabId === 'recherche') {
+                document.getElementById('resultsContainer').innerHTML = '';
+                document.getElementById('resultsSection').classList.add('hidden');
+            }
+        }
+
+        // ===== INSCRIPTIONS FIREBASE =====
+        async function registerStudent() {
             const studentData = {
                 name: document.getElementById('studentName').value,
                 phone: document.getElementById('studentPhone').value,
@@ -1265,75 +1137,104 @@
                 class: document.getElementById('studentClass').value,
                 school: document.getElementById('studentSchool').value,
                 age: parseInt(document.getElementById('studentAge').value),
+                address: document.getElementById('studentAddress').value,
                 password: document.getElementById('studentPassword').value,
-                type: 'student',
-                id: coverBrainDB.generateId()
+                createdAt: new Date()
             };
 
-            if (coverBrainDB.findUserByPhone(studentData.phone)) {
-                showAlert('formAlert', 'Numéro déjà utilisé', 'danger');
-                return;
+            try {
+                // Vérifier si l'utilisateur existe déjà
+                const usersSnapshot = await db.collection('users')
+                    .where('phone', '==', studentData.phone)
+                    .get();
+
+                if (!usersSnapshot.empty) {
+                    showAlert('formAlert', 'Un utilisateur avec ce numéro existe déjà', 'danger');
+                    return;
+                }
+
+                // Créer l'utilisateur dans Firebase
+                const userRef = await db.collection('users').add({
+                    name: studentData.name,
+                    phone: studentData.phone,
+                    password: studentData.password,
+                    type: 'student',
+                    banned: false,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                });
+
+                // Créer l'étudiant dans Firebase
+                await db.collection('students').add({
+                    userId: userRef.id,
+                    ...studentData,
+                    createdAt: new Date()
+                });
+
+                showAlert('formAlert', 'Inscription réussie! Vous pouvez maintenant vous connecter.', 'success');
+                document.getElementById('studentForm').reset();
+
+            } catch (error) {
+                console.error('Erreur inscription étudiant:', error);
+                showAlert('formAlert', 'Erreur lors de l\'inscription', 'danger');
             }
-
-            coverBrainDB.users.push({
-                id: studentData.id,
-                name: studentData.name,
-                phone: studentData.phone,
-                password: studentData.password,
-                type: 'student',
-                banned: false
-            });
-
-            coverBrainDB.students.push({
-                userId: studentData.id,
-                ...studentData
-            });
-
-            coverBrainDB.save();
-            showAlert('formAlert', 'Inscription réussie!', 'success');
-            document.getElementById('studentForm').reset();
         }
 
-        function registerTeacher() {
+        async function registerTeacher() {
             const teacherData = {
                 name: document.getElementById('teacherName').value,
                 phone: document.getElementById('teacherPhone').value,
                 subjects: document.getElementById('teacherSubjects').value.split(',').map(s => s.trim()),
                 classLevels: document.getElementById('teacherClass').value.split(',').map(s => s.trim()),
+                school: document.getElementById('teacherSchool').value,
+                address: document.getElementById('teacherAddress').value,
                 maxStudents: parseInt(document.getElementById('maxStudents').value),
                 currentStudents: 0,
                 password: document.getElementById('teacherPassword').value,
-                type: 'teacher',
-                id: coverBrainDB.generateId(),
-                verified: true
+                verified: true,
+                createdAt: new Date()
             };
 
-            if (coverBrainDB.findUserByPhone(teacherData.phone)) {
-                showAlert('formAlert', 'Numéro déjà utilisé', 'danger');
-                return;
+            try {
+                // Vérifier si l'utilisateur existe déjà
+                const usersSnapshot = await db.collection('users')
+                    .where('phone', '==', teacherData.phone)
+                    .get();
+
+                if (!usersSnapshot.empty) {
+                    showAlert('formAlert', 'Un utilisateur avec ce numéro existe déjà', 'danger');
+                    return;
+                }
+
+                // Créer l'utilisateur dans Firebase
+                const userRef = await db.collection('users').add({
+                    name: teacherData.name,
+                    phone: teacherData.phone,
+                    password: teacherData.password,
+                    type: 'teacher',
+                    banned: false,
+                    createdAt: new Date(),
+                    updatedAt: new Date()
+                });
+
+                // Créer le professeur dans Firebase
+                await db.collection('teachers').add({
+                    userId: userRef.id,
+                    ...teacherData,
+                    createdAt: new Date()
+                });
+
+                showAlert('formAlert', 'Inscription réussie! Votre compte est maintenant actif.', 'success');
+                document.getElementById('teacherForm').reset();
+
+            } catch (error) {
+                console.error('Erreur inscription professeur:', error);
+                showAlert('formAlert', 'Erreur lors de l\'inscription', 'danger');
             }
-
-            coverBrainDB.users.push({
-                id: teacherData.id,
-                name: teacherData.name,
-                phone: teacherData.phone,
-                password: teacherData.password,
-                type: 'teacher',
-                banned: false
-            });
-
-            coverBrainDB.teachers.push({
-                userId: teacherData.id,
-                ...teacherData
-            });
-
-            coverBrainDB.save();
-            showAlert('formAlert', 'Inscription réussie!', 'success');
-            document.getElementById('teacherForm').reset();
         }
 
-        // ===== COMMENTAIRES =====
-        function addComment() {
+        // ===== COMMENTAIRES FIREBASE =====
+        async function addComment() {
             const author = document.getElementById('commentAuthor').value;
             const text = document.getElementById('commentText').value;
 
@@ -1342,84 +1243,108 @@
                 return;
             }
 
-            coverBrainDB.addComment(author, text);
-            loadComments();
-            document.getElementById('commentForm').reset();
-            showAlert('formAlert', 'Commentaire publié!', 'success');
+            try {
+                await db.collection('comments').add({
+                    author: author,
+                    text: text,
+                    approved: true,
+                    createdAt: new Date()
+                });
+
+                await loadComments();
+                document.getElementById('commentForm').reset();
+                showAlert('formAlert', 'Commentaire publié avec succès!', 'success');
+            } catch (error) {
+                console.error('Erreur ajout commentaire:', error);
+                showAlert('formAlert', 'Erreur lors de la publication du commentaire', 'danger');
+            }
         }
 
-        function loadComments() {
+        async function loadComments() {
             const commentsContainer = document.getElementById('commentsContainer');
-            const comments = coverBrainDB.getComments();
-
-            if (comments.length === 0) {
-                commentsContainer.innerHTML = `
-                    <div style="text-align: center; padding: 2rem;">
-                        <i class="fas fa-comments fa-3x" style="color: #6c757d; margin-bottom: 1rem;"></i>
-                        <h3 style="color: #6c757d;">Aucun commentaire pour le moment</h3>
-                        <p>Soyez le premier à partager votre expérience!</p>
-                    </div>
-                `;
-                return;
-            }
-
-            commentsContainer.innerHTML = comments.map(comment => `
-                <div class="comment-card">
-                    <div class="comment-header">
-                        <span class="comment-author">${comment.author}</span>
-                        <span class="comment-date">${new Date(comment.createdAt).toLocaleDateString('fr-FR')}</span>
-                    </div>
-                    <div class="comment-content">
-                        ${comment.text}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function loadAdminComments() {
-            const adminCommentsList = document.getElementById('adminCommentsList');
-            const comments = coverBrainDB.getAllComments();
-
-            if (comments.length === 0) {
-                adminCommentsList.innerHTML = '<p>Aucun commentaire</p>';
-                return;
-            }
-
-            adminCommentsList.innerHTML = comments.map(comment => `
-                <div class="comment-admin-item">
-                    <div>
-                        <strong>${comment.author}</strong>
-                        <div style="font-size: 0.8rem; color: #666;">${comment.text.substring(0, 50)}...</div>
-                    </div>
-                    <div style="font-size: 0.8rem; color: #999;">
-                        ${new Date(comment.createdAt).toLocaleDateString('fr-FR')}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // ===== AUTHENTIFICATION =====
-        function loginUser() {
-            const phone = document.getElementById('loginPhone').value;
-            const password = document.getElementById('loginPassword').value;
             
-            const user = coverBrainDB.findUserByPhone(phone);
-            
-            if (user && user.password === password) {
-                if (user.banned) {
-                    showAlert('loginAlert', 'Compte banni', 'danger');
+            try {
+                const snapshot = await db.collection('comments')
+                    .where('approved', '==', true)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                const comments = [];
+                snapshot.forEach(doc => {
+                    comments.push({ id: doc.id, ...doc.data() });
+                });
+
+                if (comments.length === 0) {
+                    commentsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-comments fa-3x" style="color: #6c757d; margin-bottom: 1rem;"></i>
+                            <h3 style="color: #6c757d;">Aucun commentaire pour le moment</h3>
+                            <p>Soyez le premier à partager votre expérience!</p>
+                        </div>
+                    `;
                     return;
                 }
+
+                commentsContainer.innerHTML = comments.map(comment => `
+                    <div class="comment-card">
+                        <div class="comment-header">
+                            <span class="comment-author">${comment.author}</span>
+                            <span class="comment-date">${comment.createdAt.toDate().toLocaleDateString('fr-FR')}</span>
+                        </div>
+                        <div class="comment-content">
+                            ${comment.text}
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Erreur chargement commentaires:', error);
+                commentsContainer.innerHTML = '<p>Erreur lors du chargement des commentaires</p>';
+            }
+        }
+
+        // ===== AUTHENTIFICATION FIREBASE =====
+        async function loginUser() {
+            const phone = document.getElementById('loginPhone').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                // Rechercher l'utilisateur dans Firebase
+                const snapshot = await db.collection('users')
+                    .where('phone', '==', phone)
+                    .where('password', '==', password)
+                    .get();
+
+                if (snapshot.empty) {
+                    showAlert('loginAlert', 'Numéro de téléphone ou mot de passe incorrect', 'danger');
+                    return;
+                }
+
+                const userDoc = snapshot.docs[0];
+                const userData = userDoc.data();
+
+                if (userData.banned) {
+                    showAlert('loginAlert', 'Votre compte a été suspendu', 'danger');
+                    return;
+                }
+
+                // Connexion réussie
+                currentUser = {
+                    id: userDoc.id,
+                    ...userData
+                };
                 
-                currentUser = user;
                 isLoggedIn = true;
                 localStorage.setItem('coverBrainCurrentUser', JSON.stringify(currentUser));
                 
                 document.getElementById('loginModal').style.display = 'none';
                 checkLoginStatus();
                 showAlert('formAlert', 'Connexion réussie!', 'success');
-            } else {
-                showAlert('loginAlert', 'Numéro ou mot de passe incorrect', 'danger');
+                showTab('accueil');
+
+            } catch (error) {
+                console.error('Erreur connexion:', error);
+                showAlert('loginAlert', 'Erreur lors de la connexion', 'danger');
             }
         }
 
@@ -1429,37 +1354,74 @@
             localStorage.removeItem('coverBrainCurrentUser');
             checkLoginStatus();
             showAlert('formAlert', 'Déconnexion réussie', 'success');
+            showTab('accueil');
         }
 
-        // ===== RECHERCHE =====
-        function searchTeachers(searchTerm) {
+        // ===== RECHERCHE FIREBASE =====
+        async function searchTeachers(searchTerm) {
             if (!isLoggedIn) {
-                showAlert('formAlert', 'Connectez-vous pour rechercher', 'danger');
+                showAlert('formAlert', 'Connectez-vous pour rechercher des professeurs', 'danger');
+                document.getElementById('loginModal').style.display = 'flex';
                 return;
             }
 
-            const results = coverBrainDB.searchTeachers(searchTerm);
-            displaySearchResults(results);
+            if (currentUser.type !== 'student') {
+                showAlert('formAlert', 'Seuls les élèves peuvent rechercher des professeurs', 'warning');
+                return;
+            }
+
+            try {
+                const snapshot = await db.collection('teachers').get();
+                const teachers = [];
+                
+                snapshot.forEach(doc => {
+                    const teacher = { id: doc.id, ...doc.data() };
+                    // Vérifier si le professeur n'est pas banni
+                    if (!teacher.banned && teacher.verified) {
+                        const searchLower = searchTerm.toLowerCase();
+                        const matches = teacher.subjects.some(s => 
+                            s.toLowerCase().includes(searchLower)
+                        ) || teacher.name.toLowerCase().includes(searchLower) ||
+                        teacher.classLevels.some(level => 
+                            level.toLowerCase().includes(searchLower)
+                        );
+                        
+                        if (matches) {
+                            teachers.push(teacher);
+                        }
+                    }
+                });
+
+                displaySearchResults(teachers);
+
+            } catch (error) {
+                console.error('Erreur recherche:', error);
+                showAlert('formAlert', 'Erreur lors de la recherche', 'danger');
+            }
         }
 
         function displaySearchResults(teachers) {
             const resultsContainer = document.getElementById('resultsContainer');
             resultsContainer.innerHTML = '';
-            
+
             document.getElementById('resultsTitle').textContent = teachers.length > 0 
                 ? `${teachers.length} Professeur(s) Trouvé(s)` 
                 : 'Aucun professeur trouvé';
 
-            if (teachers.length === 0) return;
+            if (teachers.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 3rem;">
+                        <i class="fas fa-search fa-3x" style="color: #6c757d; margin-bottom: 1rem;"></i>
+                        <h3 style="color: #6c757d;">Aucun professeur trouvé</h3>
+                        <p>Essayez avec d'autres termes comme "Mathématiques", "Français", "Physique"...</p>
+                    </div>
+                `;
+                return;
+            }
 
             teachers.forEach(teacher => {
-                const user = coverBrainDB.users.find(u => u.id === teacher.userId);
-                const student = coverBrainDB.findStudentByUserId(currentUser.id);
                 const availableSlots = teacher.maxStudents - teacher.currentStudents;
-                const price = student?.level === 'primaire' ? 5 : 7;
-                
-                const existingInvitation = coverBrainDB.getInvitationsByStudent(currentUser.id)
-                    .find(inv => inv.teacherId === teacher.userId);
+                const price = currentUser?.level === 'primaire' ? 5 : 7;
 
                 const teacherCard = document.createElement('div');
                 teacherCard.className = 'teacher-card';
@@ -1467,28 +1429,34 @@
                     <h3>${teacher.name}</h3>
                     <div class="teacher-info">
                         <div class="info-item">
-                            <i class="fas fa-users"></i>
-                            <span>${availableSlots} place(s) libre(s)</span>
+                            <i class="fas fa-book"></i>
+                            <span><strong>Matières:</strong> ${teacher.subjects.join(', ')}</span>
                         </div>
                         <div class="info-item">
-                            <i class="fas fa-book"></i>
-                            <span>${teacher.subjects.join(', ')}</span>
+                            <i class="fas fa-graduation-cap"></i>
+                            <span><strong>Niveaux:</strong> ${teacher.classLevels.join(', ')}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-school"></i>
+                            <span><strong>Formation:</strong> ${teacher.school}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span><strong>Zone:</strong> ${teacher.address}</span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-users"></i>
+                            <span><strong>Places:</strong> ${availableSlots} disponible(s)</span>
                         </div>
                     </div>
                     <div class="price-tag">${price}$/séance</div>
                     <div class="teacher-actions">
-                        ${existingInvitation ? `
-                            <button class="btn btn-${existingInvitation.status === 'accepted' ? 'success' : existingInvitation.status === 'rejected' ? 'danger' : 'warning'}" disabled>
-                                ${existingInvitation.status === 'accepted' ? 'Accepté' : existingInvitation.status === 'rejected' ? 'Refusé' : 'En attente'}
-                            </button>
-                        ` : `
-                            <button class="btn btn-success invite-teacher" data-teacher-id="${teacher.userId}">
-                                Inviter
-                            </button>
-                        `}
+                        <button class="btn btn-success invite-teacher" data-teacher-id="${teacher.id}">
+                            <i class="fas fa-user-plus"></i> Inviter
+                        </button>
                     </div>
                 `;
-                
+
                 resultsContainer.appendChild(teacherCard);
             });
 
@@ -1502,346 +1470,524 @@
             document.getElementById('resultsSection').classList.remove('hidden');
         }
 
-        // ===== INVITATIONS =====
-        function inviteTeacher(teacherId) {
-            const student = coverBrainDB.findStudentByUserId(currentUser.id);
-            const teacher = coverBrainDB.teachers.find(t => t.userId === teacherId);
-            
-            if (!student || !teacher) return;
+        // ===== INVITATIONS FIREBASE =====
+        async function inviteTeacher(teacherId) {
+            if (!currentUser) return;
 
-            const existingInvitation = coverBrainDB.getInvitationsByStudent(currentUser.id)
-                .find(inv => inv.teacherId === teacherId);
-            
-            if (existingInvitation) {
-                showAlert('formAlert', 'Invitation déjà envoyée', 'warning');
-                return;
-            }
+            try {
+                // Vérifier si une invitation existe déjà
+                const existingInvitations = await db.collection('invitations')
+                    .where('studentId', '==', currentUser.id)
+                    .where('teacherId', '==', teacherId)
+                    .get();
 
-            coverBrainDB.addInvitation(currentUser.id, teacherId);
-            showAlert('formAlert', 'Invitation envoyée!', 'success');
-            
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput.value.trim()) {
-                searchTeachers(searchInput.value.trim());
+                if (!existingInvitations.empty) {
+                    showAlert('formAlert', 'Vous avez déjà envoyé une invitation à ce professeur', 'warning');
+                    return;
+                }
+
+                // Récupérer les infos du professeur
+                const teacherDoc = await db.collection('teachers').doc(teacherId).get();
+                const teacher = teacherDoc.data();
+
+                // Récupérer les infos de l'étudiant
+                const studentSnapshot = await db.collection('students')
+                    .where('userId', '==', currentUser.id)
+                    .get();
+                const student = studentSnapshot.docs[0].data();
+
+                // Créer l'invitation
+                await db.collection('invitations').add({
+                    studentId: currentUser.id,
+                    teacherId: teacherId,
+                    studentName: currentUser.name,
+                    teacherName: teacher.name,
+                    subjects: teacher.subjects,
+                    level: student.level,
+                    price: student.level === 'primaire' ? 5 : 7,
+                    status: 'pending',
+                    createdAt: new Date()
+                });
+
+                showAlert('formAlert', 'Invitation envoyée! Le professeur verra vos informations.', 'success');
+
+                // Recharger les résultats
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput.value.trim()) {
+                    searchTeachers(searchInput.value.trim());
+                }
+
+            } catch (error) {
+                console.error('Erreur envoi invitation:', error);
+                showAlert('formAlert', 'Erreur lors de l\'envoi de l\'invitation', 'danger');
             }
         }
 
-        // ===== PANIER =====
-        function showCart() {
+        // ===== PANIER FIREBASE =====
+        async function showCart() {
             const cartContainer = document.getElementById('cartContainer');
             const cartTitle = document.getElementById('cartTitle');
-            
             cartContainer.innerHTML = '';
 
-            if (currentUser.type === 'student') {
-                cartTitle.textContent = 'Mes Professeurs Invités';
-                displayStudentCart();
-            } else if (currentUser.type === 'teacher') {
-                cartTitle.textContent = 'Mes Demandes d\'Élèves';
-                displayTeacherCart();
-            }
+            if (!currentUser) return;
 
-            document.getElementById('panier').classList.remove('hidden');
+            try {
+                if (currentUser.type === 'student') {
+                    cartTitle.textContent = 'Mes Professeurs Invités';
+                    await displayStudentCart();
+                } else if (currentUser.type === 'teacher') {
+                    cartTitle.textContent = 'Mes Demandes d\'Élèves';
+                    await displayTeacherCart();
+                }
+            } catch (error) {
+                console.error('Erreur chargement panier:', error);
+                cartContainer.innerHTML = '<p>Erreur lors du chargement</p>';
+            }
         }
 
-        function displayStudentCart() {
+        async function displayStudentCart() {
             const cartContainer = document.getElementById('cartContainer');
-            const invitations = coverBrainDB.getInvitationsByStudent(currentUser.id);
             
-            if (invitations.length === 0) {
-                cartContainer.innerHTML = '<p>Aucune invitation envoyée</p>';
-                return;
+            try {
+                const snapshot = await db.collection('invitations')
+                    .where('studentId', '==', currentUser.id)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                if (snapshot.empty) {
+                    cartContainer.innerHTML = '<p>Aucune invitation envoyée</p>';
+                    return;
+                }
+
+                const cartItems = document.createElement('div');
+                cartItems.className = 'cart-items';
+
+                for (const doc of snapshot.docs) {
+                    const invitation = { id: doc.id, ...doc.data() };
+                    const teacherDoc = await db.collection('teachers').doc(invitation.teacherId).get();
+                    
+                    if (!teacherDoc.exists) continue;
+                    
+                    const teacher = teacherDoc.data();
+
+                    const cartItem = document.createElement('div');
+                    cartItem.className = `cart-item ${invitation.status}`;
+                    cartItem.innerHTML = `
+                        <div class="status-dot ${invitation.status}"></div>
+                        <h4>${teacher.name}</h4>
+                        <p><strong>Matières:</strong> ${teacher.subjects.join(', ')}</p>
+                        <p><strong>Niveaux:</strong> ${teacher.classLevels.join(', ')}</p>
+                        <div class="status-info">
+                            ${invitation.status === 'pending' ? '⏳ En attente de réponse' : 
+                              invitation.status === 'accepted' ? '✅ Accepté' : '❌ Refusé'}
+                        </div>
+                        ${invitation.status === 'accepted' ? `
+                            <div class="contact-info">
+                                <h5><i class="fas fa-address-book"></i> Contact du Professeur</h5>
+                                <p><strong>Téléphone:</strong> ${teacher.phone}</p>
+                                <p><strong>Adresse:</strong> ${teacher.address}</p>
+                                <div class="teacher-actions">
+                                    <button class="btn btn-whatsapp contact-teacher" data-phone="${teacher.phone}" data-name="${teacher.name}">
+                                        <i class="fab fa-whatsapp"></i> WhatsApp
+                                    </button>
+                                    <button class="btn btn-primary contact-teacher" data-phone="${teacher.phone}">
+                                        <i class="fas fa-phone"></i> Appeler
+                                    </button>
+                                </div>
+                            </div>
+                        ` : ''}
+                    `;
+                    cartItems.appendChild(cartItem);
+                }
+
+                cartContainer.appendChild(cartItems);
+                setupContactButtons();
+
+            } catch (error) {
+                console.error('Erreur panier étudiant:', error);
+                cartContainer.innerHTML = '<p>Erreur lors du chargement des invitations</p>';
             }
-
-            const cartItems = document.createElement('div');
-            cartItems.className = 'cart-items';
-
-            invitations.forEach(invitation => {
-                const teacher = coverBrainDB.teachers.find(t => t.userId === invitation.teacherId);
-                if (!teacher) return;
-
-                const cartItem = document.createElement('div');
-                cartItem.className = `cart-item ${invitation.status}`;
-                cartItem.innerHTML = `
-                    <div class="status-dot ${invitation.status}"></div>
-                    <h4>${teacher.name}</h4>
-                    <p>${teacher.subjects.join(', ')}</p>
-                    <div class="status-info">
-                        ${invitation.status === 'pending' ? '⏳ En attente' : invitation.status === 'accepted' ? '✅ Accepté' : '❌ Refusé'}
-                    </div>
-                `;
-                
-                cartItems.appendChild(cartItem);
-            });
-
-            cartContainer.appendChild(cartItems);
         }
 
-        function displayTeacherCart() {
+        async function displayTeacherCart() {
             const cartContainer = document.getElementById('cartContainer');
-            const invitations = coverBrainDB.getInvitationsByTeacher(currentUser.id);
             
-            if (invitations.length === 0) {
-                cartContainer.innerHTML = '<p>Aucune demande reçue</p>';
-                return;
+            try {
+                const snapshot = await db.collection('invitations')
+                    .where('teacherId', '==', currentUser.id)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                if (snapshot.empty) {
+                    cartContainer.innerHTML = '<p>Aucune demande reçue</p>';
+                    return;
+                }
+
+                const cartItems = document.createElement('div');
+                cartItems.className = 'cart-items';
+
+                for (const doc of snapshot.docs) {
+                    const invitation = { id: doc.id, ...doc.data() };
+                    
+                    // Trouver l'étudiant
+                    const studentSnapshot = await db.collection('students')
+                        .where('userId', '==', invitation.studentId)
+                        .get();
+
+                    if (studentSnapshot.empty) continue;
+                    
+                    const student = studentSnapshot.docs[0].data();
+
+                    const cartItem = document.createElement('div');
+                    cartItem.className = `cart-item ${invitation.status}`;
+                    cartItem.innerHTML = `
+                        <div class="status-dot ${invitation.status}"></div>
+                        <h4>${student.name}</h4>
+                        <div class="student-info">
+                            <div class="info-item">
+                                <i class="fas fa-phone"></i>
+                                <span><strong>Téléphone:</strong> ${student.phone}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span><strong>Niveau:</strong> ${student.level} - ${student.class}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-school"></i>
+                                <span><strong>École:</strong> ${student.school}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span><strong>Adresse:</strong> ${student.address}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-birthday-cake"></i>
+                                <span><strong>Âge:</strong> ${student.age} ans</span>
+                            </div>
+                        </div>
+                        <div class="cart-item-actions">
+                            ${invitation.status === 'pending' ? `
+                                <button class="btn btn-success accept-invitation" data-invitation-id="${invitation.id}">
+                                    <i class="fas fa-check"></i> Accepter
+                                </button>
+                                <button class="btn btn-danger reject-invitation" data-invitation-id="${invitation.id}">
+                                    <i class="fas fa-times"></i> Refuser
+                                </button>
+                            ` : `
+                                <button class="btn btn-${invitation.status === 'accepted' ? 'success' : 'danger'}" disabled>
+                                    ${invitation.status === 'accepted' ? '✅ Accepté' : '❌ Refusé'}
+                                </button>
+                                ${invitation.status === 'accepted' ? `
+                                    <button class="btn btn-whatsapp contact-student" data-phone="${student.phone}" data-name="${student.name}">
+                                        <i class="fab fa-whatsapp"></i> Contacter
+                                    </button>
+                                ` : ''}
+                            `}
+                        </div>
+                    `;
+                    cartItems.appendChild(cartItem);
+                }
+
+                cartContainer.appendChild(cartItems);
+
+                document.querySelectorAll('.accept-invitation').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const invitationId = this.getAttribute('data-invitation-id');
+                        updateInvitationStatus(invitationId, 'accepted');
+                    });
+                });
+
+                document.querySelectorAll('.reject-invitation').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const invitationId = this.getAttribute('data-invitation-id');
+                        updateInvitationStatus(invitationId, 'rejected');
+                    });
+                });
+
+                setupContactButtons();
+
+            } catch (error) {
+                console.error('Erreur panier professeur:', error);
+                cartContainer.innerHTML = '<p>Erreur lors du chargement des demandes</p>';
             }
+        }
 
-            const cartItems = document.createElement('div');
-            cartItems.className = 'cart-items';
+        async function updateInvitationStatus(invitationId, status) {
+            try {
+                await db.collection('invitations').doc(invitationId).update({
+                    status: status,
+                    respondedAt: new Date()
+                });
 
-            invitations.forEach(invitation => {
-                const student = coverBrainDB.students.find(s => s.userId === invitation.studentId);
-                if (!student) return;
+                if (status === 'accepted') {
+                    // Mettre à jour le compteur d'élèves du professeur
+                    const invitationDoc = await db.collection('invitations').doc(invitationId).get();
+                    const invitation = invitationDoc.data();
+                    
+                    const teacherSnapshot = await db.collection('teachers')
+                        .where('userId', '==', currentUser.id)
+                        .get();
 
-                const cartItem = document.createElement('div');
-                cartItem.className = `cart-item ${invitation.status}`;
-                cartItem.innerHTML = `
-                    <div class="status-dot ${invitation.status}"></div>
-                    <h4>${student.name}</h4>
-                    <p>${student.level} - ${student.class}</p>
-                    <div class="cart-item-actions">
-                        ${invitation.status === 'pending' ? `
-                            <button class="btn btn-success accept-invitation" data-invitation-id="${invitation.id}">
-                                Accepter
-                            </button>
-                            <button class="btn btn-danger reject-invitation" data-invitation-id="${invitation.id}">
-                                Refuser
-                            </button>
-                        ` : `
-                            <button class="btn btn-${invitation.status === 'accepted' ? 'success' : 'danger'}" disabled>
-                                ${invitation.status === 'accepted' ? 'Accepté' : 'Refusé'}
-                            </button>
-                        `}
-                    </div>
-                `;
-                
-                cartItems.appendChild(cartItem);
-            });
+                    if (!teacherSnapshot.empty) {
+                        const teacherDoc = teacherSnapshot.docs[0];
+                        const teacher = teacherDoc.data();
+                        
+                        await db.collection('teachers').doc(teacherDoc.id).update({
+                            currentStudents: (teacher.currentStudents || 0) + 1
+                        });
+                    }
+                }
 
-            cartContainer.appendChild(cartItems);
+                showCart();
+                showAlert('formAlert', `Invitation ${status === 'accepted' ? 'acceptée' : 'refusée'}`, 'success');
 
-            document.querySelectorAll('.accept-invitation').forEach(button => {
+            } catch (error) {
+                console.error('Erreur mise à jour invitation:', error);
+                showAlert('formAlert', 'Erreur lors de la mise à jour', 'danger');
+            }
+        }
+
+        function setupContactButtons() {
+            // Boutons WhatsApp pour les élèves
+            document.querySelectorAll('.contact-teacher').forEach(button => {
                 button.addEventListener('click', function() {
-                    const invitationId = this.getAttribute('data-invitation-id');
-                    updateInvitationStatus(invitationId, 'accepted');
+                    const phone = this.getAttribute('data-phone');
+                    const name = this.getAttribute('data-name');
+                    
+                    if (this.innerHTML.includes('WhatsApp')) {
+                        const message = `Bonjour ${name}%2C%20je%20suis%20intéressé(e)%20par%20vos%20services%20de%20répétition%20sur%20Cover%20Brain.`;
+                        window.open(`https://wa.me/${phone.replace(/\s/g, '')}?text=${message}`, '_blank');
+                    } else {
+                        window.open(`tel:${phone}`, '_self');
+                    }
                 });
             });
 
-            document.querySelectorAll('.reject-invitation').forEach(button => {
+            // Boutons WhatsApp pour les professeurs
+            document.querySelectorAll('.contact-student').forEach(button => {
                 button.addEventListener('click', function() {
-                    const invitationId = this.getAttribute('data-invitation-id');
-                    updateInvitationStatus(invitationId, 'rejected');
+                    const phone = this.getAttribute('data-phone');
+                    const name = this.getAttribute('data-name');
+                    const message = `Bonjour ${name}%2C%20d'accord%20travaillons%20ensemble%20!%20Je%20suis%20disponible%20pour%20commencer%20les%20séances%20de%20répétition.`;
+                    window.open(`https://wa.me/${phone.replace(/\s/g, '')}?text=${message}`, '_blank');
                 });
             });
         }
 
-        function updateInvitationStatus(invitationId, status) {
-            const invitation = coverBrainDB.invitations.find(inv => inv.id === invitationId);
-            if (!invitation) return;
-
-            coverBrainDB.updateInvitationStatus(invitationId, status);
-
-            const teacher = coverBrainDB.teachers.find(t => t.userId === currentUser.id);
-            if (status === 'accepted') {
-                teacher.currentStudents += 1;
-            }
-
-            coverBrainDB.save();
-            showCart();
-        }
-
-        // ===== PROFIL =====
-        function showProfile() {
+        // ===== PROFIL FIREBASE =====
+        async function showProfile() {
             const profileFormContainer = document.getElementById('profileFormContainer');
             profileFormContainer.innerHTML = '';
 
-            if (currentUser.type === 'student') {
-                const student = coverBrainDB.findStudentByUserId(currentUser.id);
-                if (!student) return;
+            if (!currentUser) return;
 
-                profileFormContainer.innerHTML = `
-                    <div class="form-group">
-                        <label>Nom complet</label>
-                        <input type="text" class="form-control" value="${student.name}" id="profileName">
-                    </div>
-                    <div class="form-group">
-                        <label>Niveau scolaire</label>
-                        <select class="form-control" id="profileLevel">
-                            <option value="primaire" ${student.level === 'primaire' ? 'selected' : ''}>Primaire</option>
-                            <option value="secondaire" ${student.level === 'secondaire' ? 'selected' : ''}>Secondaire</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Classe</label>
-                        <input type="text" class="form-control" value="${student.class}" id="profileClass">
-                    </div>
-                    <button class="btn btn-primary" onclick="saveProfile()">Sauvegarder</button>
-                `;
-            } else if (currentUser.type === 'teacher') {
-                const teacher = coverBrainDB.findTeacherByUserId(currentUser.id);
-                if (!teacher) return;
+            try {
+                if (currentUser.type === 'student') {
+                    const snapshot = await db.collection('students')
+                        .where('userId', '==', currentUser.id)
+                        .get();
 
-                profileFormContainer.innerHTML = `
-                    <div class="form-group">
-                        <label>Nom complet</label>
-                        <input type="text" class="form-control" value="${teacher.name}" id="profileName">
-                    </div>
-                    <div class="form-group">
-                        <label>Matières enseignées</label>
-                        <input type="text" class="form-control" value="${teacher.subjects.join(', ')}" id="profileSubjects">
-                    </div>
-                    <div class="form-group">
-                        <label>Nombre max d'élèves</label>
-                        <input type="number" class="form-control" value="${teacher.maxStudents}" id="profileMaxStudents" min="1" max="20">
-                    </div>
-                    <button class="btn btn-primary" onclick="saveProfile()">Sauvegarder</button>
-                `;
+                    if (snapshot.empty) return;
+                    
+                    const student = snapshot.docs[0].data();
+
+                    profileFormContainer.innerHTML = `
+                        <div class="form-group">
+                            <label>Nom complet</label>
+                            <input type="text" class="form-control" value="${student.name}" id="profileName">
+                        </div>
+                        <div class="form-group">
+                            <label>Niveau scolaire</label>
+                            <select class="form-control" id="profileLevel">
+                                <option value="primaire" ${student.level === 'primaire' ? 'selected' : ''}>Primaire</option>
+                                <option value="secondaire" ${student.level === 'secondaire' ? 'selected' : ''}>Secondaire</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Classe</label>
+                            <input type="text" class="form-control" value="${student.class}" id="profileClass">
+                        </div>
+                        <div class="form-group">
+                            <label>Établissement</label>
+                            <input type="text" class="form-control" value="${student.school}" id="profileSchool">
+                        </div>
+                        <div class="form-group">
+                            <label>Adresse</label>
+                            <input type="text" class="form-control" value="${student.address}" id="profileAddress">
+                        </div>
+                        <button class="btn btn-primary" onclick="saveProfile()">Sauvegarder</button>
+                    `;
+                } else if (currentUser.type === 'teacher') {
+                    const snapshot = await db.collection('teachers')
+                        .where('userId', '==', currentUser.id)
+                        .get();
+
+                    if (snapshot.empty) return;
+                    
+                    const teacher = snapshot.docs[0].data();
+
+                    profileFormContainer.innerHTML = `
+                        <div class="form-group">
+                            <label>Nom complet</label>
+                            <input type="text" class="form-control" value="${teacher.name}" id="profileName">
+                        </div>
+                        <div class="form-group">
+                            <label>Matières enseignées</label>
+                            <input type="text" class="form-control" value="${teacher.subjects.join(', ')}" id="profileSubjects">
+                        </div>
+                        <div class="form-group">
+                            <label>Niveaux enseignés</label>
+                            <input type="text" class="form-control" value="${teacher.classLevels.join(', ')}" id="profileClassLevels">
+                        </div>
+                        <div class="form-group">
+                            <label>Formation/Établissement</label>
+                            <input type="text" class="form-control" value="${teacher.school}" id="profileSchool">
+                        </div>
+                        <div class="form-group">
+                            <label>Adresse</label>
+                            <input type="text" class="form-control" value="${teacher.address}" id="profileAddress">
+                        </div>
+                        <div class="form-group">
+                            <label>Nombre max d'élèves</label>
+                            <input type="number" class="form-control" value="${teacher.maxStudents}" id="profileMaxStudents" min="1" max="20">
+                        </div>
+                        <button class="btn btn-primary" onclick="saveProfile()">Sauvegarder</button>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erreur chargement profil:', error);
+                profileFormContainer.innerHTML = '<p>Erreur lors du chargement du profil</p>';
             }
-
-            document.getElementById('profil').classList.remove('hidden');
         }
 
-        function saveProfile() {
-            if (currentUser.type === 'student') {
-                const student = coverBrainDB.findStudentByUserId(currentUser.id);
-                if (!student) return;
+        async function saveProfile() {
+            if (!currentUser) return;
 
-                student.name = document.getElementById('profileName').value;
-                student.level = document.getElementById('profileLevel').value;
-                student.class = document.getElementById('profileClass').value;
+            try {
+                if (currentUser.type === 'student') {
+                    const snapshot = await db.collection('students')
+                        .where('userId', '==', currentUser.id)
+                        .get();
 
-                const user = coverBrainDB.users.find(u => u.id === currentUser.id);
-                if (user) user.name = student.name;
+                    if (snapshot.empty) return;
 
-            } else if (currentUser.type === 'teacher') {
-                const teacher = coverBrainDB.findTeacherByUserId(currentUser.id);
-                if (!teacher) return;
+                    const studentDoc = snapshot.docs[0];
+                    await db.collection('students').doc(studentDoc.id).update({
+                        name: document.getElementById('profileName').value,
+                        level: document.getElementById('profileLevel').value,
+                        class: document.getElementById('profileClass').value,
+                        school: document.getElementById('profileSchool').value,
+                        address: document.getElementById('profileAddress').value
+                    });
 
-                teacher.name = document.getElementById('profileName').value;
-                teacher.subjects = document.getElementById('profileSubjects').value.split(',').map(s => s.trim());
-                teacher.maxStudents = parseInt(document.getElementById('profileMaxStudents').value);
+                    // Mettre à jour aussi dans users
+                    await db.collection('users').doc(currentUser.id).update({
+                        name: document.getElementById('profileName').value,
+                        updatedAt: new Date()
+                    });
 
-                const user = coverBrainDB.users.find(u => u.id === currentUser.id);
-                if (user) user.name = teacher.name;
+                } else if (currentUser.type === 'teacher') {
+                    const snapshot = await db.collection('teachers')
+                        .where('userId', '==', currentUser.id)
+                        .get();
+
+                    if (snapshot.empty) return;
+
+                    const teacherDoc = snapshot.docs[0];
+                    await db.collection('teachers').doc(teacherDoc.id).update({
+                        name: document.getElementById('profileName').value,
+                        subjects: document.getElementById('profileSubjects').value.split(',').map(s => s.trim()),
+                        classLevels: document.getElementById('profileClassLevels').value.split(',').map(s => s.trim()),
+                        school: document.getElementById('profileSchool').value,
+                        address: document.getElementById('profileAddress').value,
+                        maxStudents: parseInt(document.getElementById('profileMaxStudents').value)
+                    });
+
+                    // Mettre à jour aussi dans users
+                    await db.collection('users').doc(currentUser.id).update({
+                        name: document.getElementById('profileName').value,
+                        updatedAt: new Date()
+                    });
+                }
+
+                // Mettre à jour l'utilisateur courant
+                currentUser.name = document.getElementById('profileName').value;
+                localStorage.setItem('coverBrainCurrentUser', JSON.stringify(currentUser));
+                checkLoginStatus();
+
+                showAlert('formAlert', 'Profil mis à jour avec succès!', 'success');
+
+            } catch (error) {
+                console.error('Erreur sauvegarde profil:', error);
+                showAlert('formAlert', 'Erreur lors de la sauvegarde du profil', 'danger');
             }
-
-            coverBrainDB.save();
-            showAlert('formAlert', 'Profil mis à jour!', 'success');
         }
 
         // ===== ADMIN =====
-        function showAdminPanel() {
-            // Mettre à jour les statistiques
-            const users = coverBrainDB.getAllUsers();
-            document.getElementById('teachersCount').textContent = users.teachers.length;
-            document.getElementById('studentsCount').textContent = users.students.length;
+        async function createDefaultAdmin() {
+            try {
+                const snapshot = await db.collection('users')
+                    .where('type', '==', 'admin')
+                    .get();
 
-            // Afficher les professeurs
-            const teachersList = document.getElementById('teachersList');
-            teachersList.innerHTML = users.teachers.map(teacher => {
-                const user = coverBrainDB.users.find(u => u.id === teacher.userId);
-                return `
-                    <div class="user-item">
-                        <div>
-                            <div class="user-name">${teacher.name}</div>
-                            <div class="user-phone">${user.phone}</div>
-                        </div>
-                        <div>
-                            <span class="course-tag">${teacher.subjects.join(', ')}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            // Afficher les élèves
-            const studentsList = document.getElementById('studentsList');
-            studentsList.innerHTML = users.students.map(student => {
-                const user = coverBrainDB.users.find(u => u.id === student.userId);
-                return `
-                    <div class="user-item">
-                        <div>
-                            <div class="user-name">${student.name}</div>
-                            <div class="user-phone">${user.phone}</div>
-                        </div>
-                        <div>
-                            <span class="course-tag">${student.level} - ${student.class}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            // Afficher les commentaires
-            loadAdminComments();
-
-            document.getElementById('adminModal').style.display = 'flex';
-        }
-
-        function banUser() {
-            const userName = document.getElementById('userToBan').value;
-            if (userName) {
-                const user = coverBrainDB.users.find(u => u.name === userName);
-                if (user) {
-                    user.banned = true;
-                    coverBrainDB.save();
-                    alert(`Utilisateur "${userName}" banni`);
-                    showAdminPanel(); // Rafraîchir l'affichage
-                } else {
-                    alert('Utilisateur non trouvé');
+                if (snapshot.empty) {
+                    await db.collection('users').add({
+                        name: "Admin CoverBrain",
+                        phone: "+243000000000",
+                        password: "admin123",
+                        type: "admin",
+                        banned: false,
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                    });
+                    console.log("✅ Admin créé avec succès!");
                 }
-                document.getElementById('userToBan').value = '';
+            } catch (error) {
+                console.error("Erreur création admin:", error);
             }
         }
 
-        function createDefaultAdmin() {
-            if (!coverBrainDB.users.find(u => u.type === 'admin')) {
-                coverBrainDB.users.push({
-                    id: 'admin',
-                    name: 'Admin CoverBrain',
-                    phone: '+243000000000',
-                    password: 'admin123',
-                    type: 'admin',
-                    banned: false
-                });
-                coverBrainDB.save();
-            }
+        function showAdminPanel() {
+            alert("Panneau d'administration - Fonctionnalité à implémenter");
         }
 
         // ===== UTILITAIRES =====
         function checkLoginStatus() {
-            if (isLoggedIn) {
+            if (isLoggedIn && currentUser) {
                 document.getElementById('userName').textContent = currentUser.name;
                 document.getElementById('userNavItem').classList.remove('hidden');
                 document.getElementById('logoutNavItem').classList.remove('hidden');
                 document.getElementById('loginNavItem').classList.add('hidden');
-                
-                if (currentUser.type === 'student') {
-                    document.getElementById('navSearchItem').classList.remove('hidden');
-                    document.getElementById('recherche').classList.remove('hidden');
-                }
-                
-                document.getElementById('navCartItem').classList.remove('hidden');
-                document.getElementById('navProfileItem').classList.remove('hidden');
 
                 // Mettre à jour le badge du panier
                 if (currentUser.type === 'student') {
-                    const invitations = coverBrainDB.getInvitationsByStudent(currentUser.id);
-                    const cartBadge = document.getElementById('cartBadge');
-                    if (invitations.length > 0) {
-                        cartBadge.textContent = invitations.length;
-                        cartBadge.classList.remove('hidden');
-                    }
+                    updateCartBadge();
                 }
             } else {
                 document.getElementById('userNavItem').classList.add('hidden');
                 document.getElementById('logoutNavItem').classList.add('hidden');
                 document.getElementById('loginNavItem').classList.remove('hidden');
-                document.getElementById('navSearchItem').classList.add('hidden');
-                document.getElementById('navCartItem').classList.add('hidden');
-                document.getElementById('navProfileItem').classList.add('hidden');
-                document.getElementById('recherche').classList.add('hidden');
-                document.getElementById('resultsSection').classList.add('hidden');
-                document.getElementById('panier').classList.add('hidden');
-                document.getElementById('profil').classList.add('hidden');
+                document.getElementById('cartBadge').classList.add('hidden');
+            }
+        }
+
+        async function updateCartBadge() {
+            if (!currentUser || currentUser.type !== 'student') return;
+
+            try {
+                const snapshot = await db.collection('invitations')
+                    .where('studentId', '==', currentUser.id)
+                    .get();
+
+                const cartBadge = document.getElementById('cartBadge');
+                if (!snapshot.empty) {
+                    cartBadge.textContent = snapshot.size;
+                    cartBadge.classList.remove('hidden');
+                } else {
+                    cartBadge.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Erreur mise à jour badge:', error);
             }
         }
 
@@ -1850,7 +1996,6 @@
             alertContainer.textContent = message;
             alertContainer.className = `alert alert-${type}`;
             alertContainer.classList.remove('hidden');
-            
             setTimeout(() => {
                 alertContainer.classList.add('hidden');
             }, 5000);
@@ -1858,6 +2003,7 @@
 
         // Exposer les fonctions globales
         window.saveProfile = saveProfile;
+        window.showTab = showTab;
     </script>
 </body>
 </html>
