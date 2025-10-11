@@ -237,6 +237,11 @@
             color: white;
         }
 
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
         /* ===== SECTIONS ===== */
         .section {
             padding: 3rem 0;
@@ -291,7 +296,7 @@
         }
 
         /* ===== CARDS ===== */
-        .teacher-card, .student-card, .comment-card {
+        .teacher-card, .student-card, .comment-card, .admin-card {
             background-color: white;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -299,6 +304,10 @@
             margin-bottom: 2rem;
             transition: all 0.3s ease;
             border-left: 4px solid var(--primary);
+        }
+
+        .admin-card {
+            border-left-color: var(--danger);
         }
 
         .teacher-card:hover, .student-card:hover {
@@ -350,6 +359,74 @@
         .teacher-actions .btn, .student-actions .btn {
             flex: 1;
             justify-content: center;
+        }
+
+        /* ===== ADMIN PANEL ===== */
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .admin-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .user-list, .comments-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .user-item, .comment-item {
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-item:hover, .comment-item:hover {
+            background: #f8f9fa;
+        }
+
+        .user-item:last-child, .comment-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-actions, .comment-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .banned {
+            opacity: 0.6;
+            background: #f8d7da;
         }
 
         /* ===== CART SYSTEM ===== */
@@ -695,6 +772,14 @@
                 padding: 1.5rem;
                 margin: 20px;
             }
+
+            .admin-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .user-actions {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -784,6 +869,69 @@
                 <div class="form-container">
                     <h2 class="section-title">Mon Profil</h2>
                     <div id="profileFormContainer"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== ADMIN SECTION ===== -->
+        <section class="section hidden" id="adminSection">
+            <div class="container">
+                <h2 class="section-title">Panneau d'Administration</h2>
+                
+                <!-- Statistiques -->
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalUsers">0</div>
+                        <div class="stat-label">Utilisateurs Totaux</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalStudents">0</div>
+                        <div class="stat-label">Élèves</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalTeachers">0</div>
+                        <div class="stat-label">Professeurs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalInvitations">0</div>
+                        <div class="stat-label">Invitations</div>
+                    </div>
+                </div>
+
+                <!-- Gestion des Utilisateurs -->
+                <div class="admin-section">
+                    <h3><i class="fas fa-users"></i> Gestion des Utilisateurs</h3>
+                    <div class="user-list" id="usersList">
+                        <!-- Liste des utilisateurs chargée dynamiquement -->
+                    </div>
+                </div>
+
+                <!-- Modération des Commentaires -->
+                <div class="admin-section">
+                    <h3><i class="fas fa-comments"></i> Modération des Commentaires</h3>
+                    <div class="comments-list" id="adminCommentsList">
+                        <!-- Liste des commentaires chargée dynamiquement -->
+                    </div>
+                </div>
+
+                <!-- Paramètres -->
+                <div class="admin-section">
+                    <h3><i class="fas fa-cog"></i> Paramètres de la Plateforme</h3>
+                    <div class="form-group">
+                        <label>Prix séance primaire ($)</label>
+                        <input type="number" class="form-control" id="primaryPrice" value="5" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Prix séance secondaire ($)</label>
+                        <input type="number" class="form-control" id="secondaryPrice" value="7" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Commission des professeurs (%)</label>
+                        <input type="number" class="form-control" id="commissionRate" value="10" min="0" max="50">
+                    </div>
+                    <button class="btn btn-primary" onclick="savePlatformSettings()">
+                        <i class="fas fa-save"></i> Sauvegarder les paramètres
+                    </button>
                 </div>
             </div>
         </section>
@@ -938,7 +1086,7 @@
             <p><strong>Cover Brain - Plateforme de Répétiteurs</strong></p>
             <div class="social-links">
                 <a href="https://wa.me/243840426427" target="_blank"><i class="fab fa-whatsapp"></i></a>
-                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="https://m.me/cm/AbaT9AqAW84FF7Sk/?send_source=cm%3Acopy_invite_link" target="_blank"><i class="fab fa-facebook-messenger"></i></a>
             </div>
             <p>Contact : +243 840426427 (WhatsApp)</p>
             <p>© 2024 Xtronics - Tous droits réservés</p>
@@ -1125,6 +1273,8 @@
             } else if (tabId === 'recherche') {
                 document.getElementById('resultsContainer').innerHTML = '';
                 document.getElementById('resultsSection').classList.add('hidden');
+            } else if (tabId === 'adminSection') {
+                loadAdminPanel();
             }
         }
 
@@ -1923,7 +2073,264 @@
             }
         }
 
-        // ===== ADMIN =====
+        // ===== PANEL ADMIN COMPLET =====
+        async function showAdminPanel() {
+            showTab('adminSection');
+        }
+
+        async function loadAdminPanel() {
+            if (!currentUser || currentUser.type !== 'admin') return;
+
+            try {
+                await loadAdminStats();
+                await loadUsersList();
+                await loadAdminComments();
+            } catch (error) {
+                console.error('Erreur chargement panel admin:', error);
+            }
+        }
+
+        async function loadAdminStats() {
+            try {
+                // Compter les utilisateurs
+                const usersSnapshot = await db.collection('users').get();
+                const studentsSnapshot = await db.collection('students').get();
+                const teachersSnapshot = await db.collection('teachers').get();
+                const invitationsSnapshot = await db.collection('invitations').get();
+
+                document.getElementById('totalUsers').textContent = usersSnapshot.size;
+                document.getElementById('totalStudents').textContent = studentsSnapshot.size;
+                document.getElementById('totalTeachers').textContent = teachersSnapshot.size;
+                document.getElementById('totalInvitations').textContent = invitationsSnapshot.size;
+
+            } catch (error) {
+                console.error('Erreur stats admin:', error);
+            }
+        }
+
+        async function loadUsersList() {
+            const usersList = document.getElementById('usersList');
+            
+            try {
+                const snapshot = await db.collection('users')
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                if (snapshot.empty) {
+                    usersList.innerHTML = '<p>Aucun utilisateur trouvé</p>';
+                    return;
+                }
+
+                usersList.innerHTML = '';
+
+                for (const doc of snapshot.docs) {
+                    const user = { id: doc.id, ...doc.data() };
+                    
+                    let userDetails = '';
+                    if (user.type === 'student') {
+                        const studentSnapshot = await db.collection('students')
+                            .where('userId', '==', user.id)
+                            .get();
+                        if (!studentSnapshot.empty) {
+                            const student = studentSnapshot.docs[0].data();
+                            userDetails = `Niveau: ${student.level}, Classe: ${student.class}`;
+                        }
+                    } else if (user.type === 'teacher') {
+                        const teacherSnapshot = await db.collection('teachers')
+                            .where('userId', '==', user.id)
+                            .get();
+                        if (!teacherSnapshot.empty) {
+                            const teacher = teacherSnapshot.docs[0].data();
+                            userDetails = `Matières: ${teacher.subjects.join(', ')}`;
+                        }
+                    }
+
+                    const userItem = document.createElement('div');
+                    userItem.className = `user-item ${user.banned ? 'banned' : ''}`;
+                    userItem.innerHTML = `
+                        <div>
+                            <div style="font-weight: 600;">${user.name}</div>
+                            <div style="color: #6c757d; font-size: 0.9rem;">
+                                ${user.phone} • ${user.type} ${user.banned ? '• 🚫 BANNI' : ''}
+                            </div>
+                            <div style="color: #6c757d; font-size: 0.8rem;">${userDetails}</div>
+                        </div>
+                        <div class="user-actions">
+                            ${!user.banned ? `
+                                <button class="btn btn-danger btn-sm" onclick="banUser('${user.id}')">
+                                    <i class="fas fa-ban"></i> Bannir
+                                </button>
+                            ` : `
+                                <button class="btn btn-success btn-sm" onclick="unbanUser('${user.id}')">
+                                    <i class="fas fa-check"></i> Débannir
+                                </button>
+                            `}
+                            ${user.type === 'teacher' ? `
+                                <button class="btn btn-warning btn-sm" onclick="toggleTeacherVerification('${user.id}')">
+                                    <i class="fas fa-certificate"></i> Vérifier
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                    usersList.appendChild(userItem);
+                }
+
+            } catch (error) {
+                console.error('Erreur chargement utilisateurs:', error);
+                usersList.innerHTML = '<p>Erreur lors du chargement des utilisateurs</p>';
+            }
+        }
+
+        async function loadAdminComments() {
+            const adminCommentsList = document.getElementById('adminCommentsList');
+            
+            try {
+                const snapshot = await db.collection('comments')
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                if (snapshot.empty) {
+                    adminCommentsList.innerHTML = '<p>Aucun commentaire</p>';
+                    return;
+                }
+
+                adminCommentsList.innerHTML = '';
+
+                snapshot.forEach(doc => {
+                    const comment = { id: doc.id, ...doc.data() };
+                    
+                    const commentItem = document.createElement('div');
+                    commentItem.className = 'comment-item';
+                    commentItem.innerHTML = `
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600;">${comment.author}</div>
+                            <div style="color: #6c757d; font-size: 0.9rem;">
+                                ${comment.createdAt.toDate().toLocaleDateString('fr-FR')}
+                                ${!comment.approved ? '• ⚠️ En attente' : ''}
+                            </div>
+                            <div>${comment.text}</div>
+                        </div>
+                        <div class="comment-actions">
+                            ${!comment.approved ? `
+                                <button class="btn btn-success btn-sm" onclick="approveComment('${comment.id}')">
+                                    <i class="fas fa-check"></i> Approuver
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-danger btn-sm" onclick="deleteComment('${comment.id}')">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
+                        </div>
+                    `;
+                    adminCommentsList.appendChild(commentItem);
+                });
+
+            } catch (error) {
+                console.error('Erreur chargement commentaires admin:', error);
+                adminCommentsList.innerHTML = '<p>Erreur lors du chargement des commentaires</p>';
+            }
+        }
+
+        // ===== ACTIONS ADMIN =====
+        async function banUser(userId) {
+            if (!confirm('Êtes-vous sûr de vouloir bannir cet utilisateur ?')) return;
+            
+            try {
+                await db.collection('users').doc(userId).update({
+                    banned: true,
+                    updatedAt: new Date()
+                });
+                await loadUsersList();
+                showAlert('formAlert', 'Utilisateur banni avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur bannissement:', error);
+                showAlert('formAlert', 'Erreur lors du bannissement', 'danger');
+            }
+        }
+
+        async function unbanUser(userId) {
+            try {
+                await db.collection('users').doc(userId).update({
+                    banned: false,
+                    updatedAt: new Date()
+                });
+                await loadUsersList();
+                showAlert('formAlert', 'Utilisateur débanni avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur débannissement:', error);
+                showAlert('formAlert', 'Erreur lors du débannissement', 'danger');
+            }
+        }
+
+        async function toggleTeacherVerification(userId) {
+            try {
+                const teacherSnapshot = await db.collection('teachers')
+                    .where('userId', '==', userId)
+                    .get();
+
+                if (!teacherSnapshot.empty) {
+                    const teacherDoc = teacherSnapshot.docs[0];
+                    const currentStatus = teacherDoc.data().verified;
+                    
+                    await db.collection('teachers').doc(teacherDoc.id).update({
+                        verified: !currentStatus
+                    });
+                    
+                    await loadUsersList();
+                    showAlert('formAlert', `Professeur ${!currentStatus ? 'vérifié' : 'dévérifié'} avec succès`, 'success');
+                }
+            } catch (error) {
+                console.error('Erreur vérification professeur:', error);
+                showAlert('formAlert', 'Erreur lors de la vérification', 'danger');
+            }
+        }
+
+        async function approveComment(commentId) {
+            try {
+                await db.collection('comments').doc(commentId).update({
+                    approved: true
+                });
+                await loadAdminComments();
+                await loadComments();
+                showAlert('formAlert', 'Commentaire approuvé avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur approbation commentaire:', error);
+                showAlert('formAlert', 'Erreur lors de l\'approbation', 'danger');
+            }
+        }
+
+        async function deleteComment(commentId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) return;
+            
+            try {
+                await db.collection('comments').doc(commentId).delete();
+                await loadAdminComments();
+                await loadComments();
+                showAlert('formAlert', 'Commentaire supprimé avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur suppression commentaire:', error);
+                showAlert('formAlert', 'Erreur lors de la suppression', 'danger');
+            }
+        }
+
+        async function savePlatformSettings() {
+            try {
+                // Ici tu pourrais sauvegarder dans une collection 'settings'
+                const primaryPrice = document.getElementById('primaryPrice').value;
+                const secondaryPrice = document.getElementById('secondaryPrice').value;
+                const commissionRate = document.getElementById('commissionRate').value;
+
+                // Mettre à jour l'affichage des prix dans les formulaires
+                document.querySelector('#studentForm option[value="primaire"]').textContent = `Primaire (${primaryPrice}$/séance)`;
+                document.querySelector('#studentForm option[value="secondaire"]').textContent = `Secondaire (${secondaryPrice}$/séance)`;
+
+                showAlert('formAlert', 'Paramètres sauvegardés avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur sauvegarde paramètres:', error);
+                showAlert('formAlert', 'Erreur lors de la sauvegarde des paramètres', 'danger');
+            }
+        }
+
+        // ===== ADMIN INITIALIZATION =====
         async function createDefaultAdmin() {
             try {
                 const snapshot = await db.collection('users')
@@ -1945,10 +2352,6 @@
             } catch (error) {
                 console.error("Erreur création admin:", error);
             }
-        }
-
-        function showAdminPanel() {
-            alert("Panneau d'administration - Fonctionnalité à implémenter");
         }
 
         // ===== UTILITAIRES =====
@@ -2004,6 +2407,12 @@
         // Exposer les fonctions globales
         window.saveProfile = saveProfile;
         window.showTab = showTab;
+        window.banUser = banUser;
+        window.unbanUser = unbanUser;
+        window.toggleTeacherVerification = toggleTeacherVerification;
+        window.approveComment = approveComment;
+        window.deleteComment = deleteComment;
+        window.savePlatformSettings = savePlatformSettings;
     </script>
 </body>
 </html>
