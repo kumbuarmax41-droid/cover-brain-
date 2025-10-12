@@ -1303,8 +1303,8 @@
                     return;
                 }
 
-                // Créer l'utilisateur dans Firebase
-                const userRef = await db.collection('students').add(studentData);
+                // Créer l'étudiant dans Firebase
+                await db.collection('students').add(studentData);
 
                 showAlert('formAlert', 'Inscription réussie! Vous pouvez maintenant vous connecter.', 'success');
                 document.getElementById('studentForm').reset();
@@ -1452,7 +1452,7 @@
                 }
 
                 if (snapshot.empty) {
-                    // Rechercher dans admin
+                    // Rechercher comme admin
                     snapshot = await db.collection('admin')
                         .where('phone', '==', phone)
                         .where('password', '==', password)
@@ -1468,10 +1468,11 @@
                 const userDoc = snapshot.docs[0];
                 const userData = userDoc.data();
 
-                if (userData.banned) {
-                    showAlert('loginAlert', 'Votre compte a été suspendu', 'danger');
-                    return;
-                }
+                // SUPPRIMÉ: Vérification banned car le champ n'existe pas
+                // if (userData.banned) {
+                //     showAlert('loginAlert', 'Votre compte a été suspendu', 'danger');
+                //     return;
+                // }
 
                 // Connexion réussie
                 currentUser = {
@@ -1527,19 +1528,17 @@
                 
                 snapshot.forEach(doc => {
                     const teacher = { id: doc.id, ...doc.data() };
-                    // Vérifier si le professeur n'est pas banni
-                    if (!teacher.banned && teacher.verified) {
-                        const searchLower = searchTerm.toLowerCase();
-                        const matches = teacher.subjects.some(s => 
-                            s.toLowerCase().includes(searchLower)
-                        ) || teacher.name.toLowerCase().includes(searchLower) ||
-                        teacher.classLevels.some(level => 
-                            level.toLowerCase().includes(searchLower)
-                        );
-                        
-                        if (matches) {
-                            teachers.push(teacher);
-                        }
+                    // MODIFIÉ: Supprimer vérification banned et verified
+                    const searchLower = searchTerm.toLowerCase();
+                    const matches = teacher.subjects.some(s => 
+                        s.toLowerCase().includes(searchLower)
+                    ) || teacher.name.toLowerCase().includes(searchLower) ||
+                    teacher.classLevels.some(level => 
+                        level.toLowerCase().includes(searchLower)
+                    );
+                    
+                    if (matches) {
+                        teachers.push(teacher);
                     }
                 });
 
@@ -1573,7 +1572,7 @@
             teachers.forEach(teacher => {
                 const availableSlots = teacher.maxStudents - teacher.currentStudents;
                 const price = currentUser?.level === 'primaire' ? 5 : 7;
-                const whatsappMessage = `Bonjour ${teacher.name}%2C%20je%20suis%20intéressé(e)%20par%20vos%20services%20de%20répétition%20sur%20Cover%20Brain.`;
+                const message = `Bonjour ${teacher.name}%2C%20je%20suis%20intéressé(e)%20par%20vos%20services%20de%20répétition%20sur%20Cover%20Brain.`;
 
                 const teacherCard = document.createElement('div');
                 teacherCard.className = 'teacher-card';
@@ -1606,7 +1605,7 @@
                         <button class="btn btn-success invite-teacher" data-teacher-id="${teacher.id}">
                             <i class="fas fa-user-plus"></i> Inviter
                         </button>
-                        <a href="https://wa.me/${teacher.phone}?text=${whatsappMessage}" class="btn btn-whatsapp" target="_blank">
+                        <a href="https://wa.me/${teacher.phone}?text=${message}" class="btn btn-whatsapp" target="_blank">
                             <i class="fab fa-whatsapp"></i> WhatsApp
                         </a>
                     </div>
@@ -1645,11 +1644,13 @@
                 const teacherDoc = await db.collection('teachers').doc(teacherId).get();
                 const teacher = teacherDoc.data();
 
-                // Récupérer les infos de l'étudiant
-                const studentSnapshot = await db.collection('students')
-                    .where('userId', '==', currentUser.id)
-                    .get();
-                const student = studentSnapshot.docs[0].data();
+                // MODIFIÉ: Récupérer l'étudiant directement par ID
+                const studentDoc = await db.collection('students').doc(currentUser.id).get();
+                if (!studentDoc.exists) {
+                    showAlert('formAlert', 'Profil étudiant non trouvé', 'danger');
+                    return;
+                }
+                const student = studentDoc.data();
 
                 // Créer l'invitation
                 await db.collection('invitations').add({
@@ -1659,6 +1660,8 @@
                     teacherName: teacher.name,
                     studentPhone: currentUser.phone,
                     teacherPhone: teacher.phone,
+                    studentAddress: currentUser.address,
+                    teacherAddress: teacher.address,
                     subjects: teacher.subjects,
                     level: student.level,
                     price: student.level === 'primaire' ? 5 : 7,
@@ -1731,9 +1734,10 @@
                 const cartItems = document.createElement('div');
                 cartItems.className = 'cart-items';
 
-                snapshot.forEach(doc => {
+                for (const doc of snapshot.docs) {
                     const invitation = { id: doc.id, ...doc.data() };
-                    const whatsappMessage = `Bonjour ${invitation.teacherName}%2C%20je%20suis%20intéressé(e)%20par%20vos%20services%20de%20répétition%20sur%20Cover%20Brain.`;
+                    
+                    const message = `Bonjour ${invitation.teacherName}%2C%20je%20suis%20intéressé(e)%20par%20vos%20services%20de%20répétition%20sur%20Cover%20Brain.`;
 
                     const cartItem = document.createElement('div');
                     cartItem.className = `cart-item ${invitation.status}`;
@@ -1749,14 +1753,16 @@
                         ${invitation.status === 'accepted' ? `
                             <div class="contact-info">
                                 <h5><i class="fas fa-address-book"></i> Contact du Professeur</h5>
-                                <a href="https://wa.me/${invitation.teacherPhone}?text=${whatsappMessage}" class="btn btn-whatsapp" target="_blank">
-                                    <i class="fab fa-whatsapp"></i> Contacter sur WhatsApp
-                                </a>
+                                <div class="teacher-actions">
+                                    <a href="https://wa.me/${invitation.teacherPhone}?text=${message}" class="btn btn-whatsapp" target="_blank">
+                                        <i class="fab fa-whatsapp"></i> WhatsApp
+                                    </a>
+                                </div>
                             </div>
                         ` : ''}
                     `;
                     cartItems.appendChild(cartItem);
-                });
+                }
 
                 cartContainer.appendChild(cartItems);
 
@@ -1767,6 +1773,9 @@
                         <i class="fas fa-exclamation-circle fa-3x" style="color: #dc3545; margin-bottom: 1rem;"></i>
                         <h3 style="color: #dc3545;">Erreur de chargement</h3>
                         <p>Impossible de charger vos invitations. Veuillez réessayer.</p>
+                        <button class="btn btn-primary" onclick="showCart()">
+                            <i class="fas fa-redo"></i> Réessayer
+                        </button>
                     </div>
                 `;
             }
@@ -1795,26 +1804,42 @@
                 const cartItems = document.createElement('div');
                 cartItems.className = 'cart-items';
 
-                snapshot.forEach(doc => {
+                for (const doc of snapshot.docs) {
                     const invitation = { id: doc.id, ...doc.data() };
+                    
+                    // MODIFIÉ: Récupérer l'étudiant directement par ID
+                    const studentDoc = await db.collection('students').doc(invitation.studentId).get();
+                    if (!studentDoc.exists) {
+                        console.warn(`Student ${invitation.studentId} non trouvé`);
+                        continue;
+                    }
+                    const student = studentDoc.data();
 
                     const cartItem = document.createElement('div');
                     cartItem.className = `cart-item ${invitation.status}`;
                     cartItem.innerHTML = `
                         <div class="status-dot ${invitation.status}"></div>
-                        <h4>${invitation.studentName}</h4>
+                        <h4>${student.name}</h4>
                         <div class="student-info">
                             <div class="info-item">
                                 <i class="fas fa-phone"></i>
-                                <span><strong>Téléphone:</strong> ${invitation.studentPhone}</span>
+                                <span><strong>Téléphone:</strong> ${student.phone}</span>
                             </div>
                             <div class="info-item">
                                 <i class="fas fa-graduation-cap"></i>
-                                <span><strong>Niveau:</strong> ${invitation.level}</span>
+                                <span><strong>Niveau:</strong> ${student.level} - ${student.class}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-school"></i>
+                                <span><strong>École:</strong> ${student.school}</span>
                             </div>
                             <div class="info-item">
                                 <i class="fas fa-map-marker-alt"></i>
-                                <span><strong>Adresse:</strong> ${invitation.studentAddress}</span>
+                                <span><strong>Adresse:</strong> ${student.address}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-birthday-cake"></i>
+                                <span><strong>Âge:</strong> ${student.age} ans</span>
                             </div>
                         </div>
                         <div class="cart-item-actions">
@@ -1833,7 +1858,7 @@
                         </div>
                     `;
                     cartItems.appendChild(cartItem);
-                });
+                }
 
                 cartContainer.appendChild(cartItems);
 
@@ -1858,6 +1883,9 @@
                         <i class="fas fa-exclamation-circle fa-3x" style="color: #dc3545; margin-bottom: 1rem;"></i>
                         <h3 style="color: #dc3545;">Erreur de chargement</h3>
                         <p>Impossible de charger les demandes. Veuillez réessayer.</p>
+                        <button class="btn btn-primary" onclick="showCart()">
+                            <i class="fas fa-redo"></i> Réessayer
+                        </button>
                     </div>
                 `;
             }
@@ -1872,18 +1900,10 @@
 
                 if (status === 'accepted') {
                     // Mettre à jour le compteur d'élèves du professeur
-                    const invitationDoc = await db.collection('invitations').doc(invitationId).get();
-                    const invitation = invitationDoc.data();
-                    
-                    const teacherSnapshot = await db.collection('teachers')
-                        .where('userId', '==', currentUser.id)
-                        .get();
-
-                    if (!teacherSnapshot.empty) {
-                        const teacherDoc = teacherSnapshot.docs[0];
+                    const teacherDoc = await db.collection('teachers').doc(currentUser.id).get();
+                    if (teacherDoc.exists) {
                         const teacher = teacherDoc.data();
-                        
-                        await db.collection('teachers').doc(teacherDoc.id).update({
+                        await db.collection('teachers').doc(currentUser.id).update({
                             currentStudents: (teacher.currentStudents || 0) + 1
                         });
                     }
@@ -1907,52 +1927,71 @@
 
             try {
                 if (currentUser.type === 'student') {
-                    const snapshot = await db.collection('students')
-                        .where('userId', '==', currentUser.id)
-                        .get();
-
-                    if (snapshot.empty) return;
+                    // MODIFIÉ: Récupérer directement par ID
+                    const studentDoc = await db.collection('students').doc(currentUser.id).get();
+                    if (!studentDoc.exists) return;
                     
-                    const student = snapshot.docs[0].data();
+                    const student = studentDoc.data();
 
                     profileFormContainer.innerHTML = `
-                        <div class="alert alert-info">
-                            <h4>${student.name}</h4>
-                            <p><strong>Téléphone:</strong> ${student.phone}</p>
-                            <p><strong>Niveau:</strong> ${student.level}</p>
-                            <p><strong>Classe:</strong> ${student.class}</p>
-                            <p><strong>École:</strong> ${student.school}</p>
-                            <p><strong>Adresse:</strong> ${student.address}</p>
+                        <div class="form-group">
+                            <label>Nom complet</label>
+                            <input type="text" class="form-control" value="${student.name}" id="profileName">
                         </div>
+                        <div class="form-group">
+                            <label>Niveau scolaire</label>
+                            <select class="form-control" id="profileLevel">
+                                <option value="primaire" ${student.level === 'primaire' ? 'selected' : ''}>Primaire</option>
+                                <option value="secondaire" ${student.level === 'secondaire' ? 'selected' : ''}>Secondaire</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Classe</label>
+                            <input type="text" class="form-control" value="${student.class}" id="profileClass">
+                        </div>
+                        <div class="form-group">
+                            <label>Établissement</label>
+                            <input type="text" class="form-control" value="${student.school}" id="profileSchool">
+                        </div>
+                        <div class="form-group">
+                            <label>Adresse</label>
+                            <input type="text" class="form-control" value="${student.address}" id="profileAddress">
+                        </div>
+                        <button class="btn btn-primary" onclick="saveProfile()">Sauvegarder</button>
                     `;
                 } else if (currentUser.type === 'teacher') {
-                    const snapshot = await db.collection('teachers')
-                        .where('userId', '==', currentUser.id)
-                        .get();
-
-                    if (snapshot.empty) return;
+                    // MODIFIÉ: Récupérer directement par ID
+                    const teacherDoc = await db.collection('teachers').doc(currentUser.id).get();
+                    if (!teacherDoc.exists) return;
                     
-                    const teacher = snapshot.docs[0].data();
+                    const teacher = teacherDoc.data();
 
                     profileFormContainer.innerHTML = `
-                        <div class="alert alert-info">
-                            <h4>${teacher.name}</h4>
-                            <p><strong>Téléphone:</strong> ${teacher.phone}</p>
-                            <p><strong>Matières:</strong> ${teacher.subjects.join(', ')}</p>
-                            <p><strong>Niveaux:</strong> ${teacher.classLevels.join(', ')}</p>
-                            <p><strong>Formation:</strong> ${teacher.school}</p>
-                            <p><strong>Adresse:</strong> ${teacher.address}</p>
-                            <p><strong>Élèves actuels:</strong> ${teacher.currentStudents}/${teacher.maxStudents}</p>
+                        <div class="form-group">
+                            <label>Nom complet</label>
+                            <input type="text" class="form-control" value="${teacher.name}" id="profileName">
                         </div>
-                    `;
-                } else if (currentUser.type === 'admin') {
-                    profileFormContainer.innerHTML = `
-                        <div class="alert alert-info">
-                            <h4>${currentUser.name}</h4>
-                            <p><strong>Type:</strong> Administrateur</p>
-                            <p><strong>Téléphone:</strong> ${currentUser.phone}</p>
-                            <p>Accédez au panneau d'administration pour gérer la plateforme.</p>
+                        <div class="form-group">
+                            <label>Matières enseignées</label>
+                            <input type="text" class="form-control" value="${teacher.subjects.join(', ')}" id="profileSubjects">
                         </div>
+                        <div class="form-group">
+                            <label>Niveaux enseignés</label>
+                            <input type="text" class="form-control" value="${teacher.classLevels.join(', ')}" id="profileClassLevels">
+                        </div>
+                        <div class="form-group">
+                            <label>Formation/Établissement</label>
+                            <input type="text" class="form-control" value="${teacher.school}" id="profileSchool">
+                        </div>
+                        <div class="form-group">
+                            <label>Adresse</label>
+                            <input type="text" class="form-control" value="${teacher.address}" id="profileAddress">
+                        </div>
+                        <div class="form-group">
+                            <label>Nombre max d'élèves</label>
+                            <input type="number" class="form-control" value="${teacher.maxStudents}" id="profileMaxStudents" min="1" max="20">
+                        </div>
+                        <button class="btn btn-primary" onclick="saveProfile()">Sauvegarder</button>
                     `;
                 }
             } catch (error) {
@@ -1961,7 +2000,46 @@
             }
         }
 
-        // ===== ADMIN PANEL =====
+        async function saveProfile() {
+            if (!currentUser) return;
+
+            try {
+                if (currentUser.type === 'student') {
+                    // MODIFIÉ: Mettre à jour directement par ID
+                    await db.collection('students').doc(currentUser.id).update({
+                        name: document.getElementById('profileName').value,
+                        level: document.getElementById('profileLevel').value,
+                        class: document.getElementById('profileClass').value,
+                        school: document.getElementById('profileSchool').value,
+                        address: document.getElementById('profileAddress').value
+                    });
+
+                } else if (currentUser.type === 'teacher') {
+                    // MODIFIÉ: Mettre à jour directement par ID
+                    await db.collection('teachers').doc(currentUser.id).update({
+                        name: document.getElementById('profileName').value,
+                        subjects: document.getElementById('profileSubjects').value.split(',').map(s => s.trim()),
+                        classLevels: document.getElementById('profileClassLevels').value.split(',').map(s => s.trim()),
+                        school: document.getElementById('profileSchool').value,
+                        address: document.getElementById('profileAddress').value,
+                        maxStudents: parseInt(document.getElementById('profileMaxStudents').value)
+                    });
+                }
+
+                // Mettre à jour l'utilisateur courant
+                currentUser.name = document.getElementById('profileName').value;
+                localStorage.setItem('coverBrainCurrentUser', JSON.stringify(currentUser));
+                checkLoginStatus();
+
+                showAlert('formAlert', 'Profil mis à jour avec succès!', 'success');
+
+            } catch (error) {
+                console.error('Erreur sauvegarde profil:', error);
+                showAlert('formAlert', 'Erreur lors de la sauvegarde du profil', 'danger');
+            }
+        }
+
+        // ===== PANEL ADMIN =====
         async function showAdminPanel() {
             showTab('adminSection');
         }
@@ -1980,10 +2058,12 @@
 
         async function loadAdminStats() {
             try {
-                // Compter les utilisateurs
-                const studentsSnapshot = await db.collection('students').get();
-                const teachersSnapshot = await db.collection('teachers').get();
-                const invitationsSnapshot = await db.collection('invitations').get();
+                // MODIFIÉ: Supprimer la référence à 'users'
+                const [studentsSnapshot, teachersSnapshot, invitationsSnapshot] = await Promise.all([
+                    db.collection('students').get(),
+                    db.collection('teachers').get(),
+                    db.collection('invitations').get()
+                ]);
 
                 document.getElementById('totalUsers').textContent = studentsSnapshot.size + teachersSnapshot.size;
                 document.getElementById('totalStudents').textContent = studentsSnapshot.size;
@@ -1999,8 +2079,10 @@
             const usersList = document.getElementById('usersList');
             
             try {
-                const studentsSnapshot = await db.collection('students').get();
-                const teachersSnapshot = await db.collection('teachers').get();
+                const [studentsSnapshot, teachersSnapshot] = await Promise.all([
+                    db.collection('students').get(),
+                    db.collection('teachers').get()
+                ]);
 
                 if (studentsSnapshot.empty && teachersSnapshot.empty) {
                     usersList.innerHTML = '<p>Aucun utilisateur trouvé</p>';
@@ -2011,27 +2093,22 @@
 
                 // Afficher les étudiants
                 studentsSnapshot.forEach(doc => {
-                    const user = { id: doc.id, ...doc.data() };
+                    const student = { id: doc.id, ...doc.data() };
                     
                     const userItem = document.createElement('div');
-                    userItem.className = `user-item ${user.banned ? 'banned' : ''}`;
+                    userItem.className = `user-item`; // MODIFIÉ: Supprimé banned car n'existe pas
                     userItem.innerHTML = `
                         <div>
-                            <div style="font-weight: 600;">${user.name}</div>
+                            <div style="font-weight: 600;">${student.name}</div>
                             <div style="color: #6c757d; font-size: 0.9rem;">
-                                ${user.phone} • Élève • ${user.level} ${user.banned ? '• 🚫 BANNI' : ''}
+                                ${student.phone} • Élève
                             </div>
+                            <div style="color: #6c757d; font-size: 0.8rem;">Niveau: ${student.level}, Classe: ${student.class}</div>
                         </div>
                         <div class="user-actions">
-                            ${!user.banned ? `
-                                <button class="btn btn-danger btn-sm" onclick="banUser('${user.id}', 'student')">
-                                    <i class="fas fa-ban"></i> Bannir
-                                </button>
-                            ` : `
-                                <button class="btn btn-success btn-sm" onclick="unbanUser('${user.id}', 'student')">
-                                    <i class="fas fa-check"></i> Débannir
-                                </button>
-                            `}
+                            <button class="btn btn-danger btn-sm" onclick="banUser('${student.id}', 'student')">
+                                <i class="fas fa-ban"></i> Bannir
+                            </button>
                         </div>
                     `;
                     usersList.appendChild(userItem);
@@ -2039,29 +2116,21 @@
 
                 // Afficher les professeurs
                 teachersSnapshot.forEach(doc => {
-                    const user = { id: doc.id, ...doc.data() };
+                    const teacher = { id: doc.id, ...doc.data() };
                     
                     const userItem = document.createElement('div');
-                    userItem.className = `user-item ${user.banned ? 'banned' : ''}`;
+                    userItem.className = `user-item`; // MODIFIÉ: Supprimé banned car n'existe pas
                     userItem.innerHTML = `
                         <div>
-                            <div style="font-weight: 600;">${user.name}</div>
+                            <div style="font-weight: 600;">${teacher.name}</div>
                             <div style="color: #6c757d; font-size: 0.9rem;">
-                                ${user.phone} • Professeur • ${user.subjects.join(', ')} ${user.banned ? '• 🚫 BANNI' : ''}
+                                ${teacher.phone} • Professeur
                             </div>
+                            <div style="color: #6c757d; font-size: 0.8rem;">Matières: ${teacher.subjects.join(', ')}</div>
                         </div>
                         <div class="user-actions">
-                            ${!user.banned ? `
-                                <button class="btn btn-danger btn-sm" onclick="banUser('${user.id}', 'teacher')">
-                                    <i class="fas fa-ban"></i> Bannir
-                                </button>
-                            ` : `
-                                <button class="btn btn-success btn-sm" onclick="unbanUser('${user.id}', 'teacher')">
-                                    <i class="fas fa-check"></i> Débannir
-                                </button>
-                            `}
-                            <button class="btn btn-warning btn-sm" onclick="toggleTeacherVerification('${user.id}')">
-                                <i class="fas fa-certificate"></i> ${user.verified ? 'Dévérifier' : 'Vérifier'}
+                            <button class="btn btn-danger btn-sm" onclick="banUser('${teacher.id}', 'teacher')">
+                                <i class="fas fa-ban"></i> Bannir
                             </button>
                         </div>
                     `;
@@ -2098,17 +2167,11 @@
                         <div style="flex: 1;">
                             <div style="font-weight: 600;">${comment.author}</div>
                             <div style="color: #6c757d; font-size: 0.9rem;">
-                                ${comment.createdAt.toDate().toLocaleDateString('fr-FR')}
-                                ${!comment.approved ? '• ⚠️ En attente' : ''}
+                                ${comment.createdAt?.toDate().toLocaleDateString('fr-FR')}
                             </div>
                             <div>${comment.text}</div>
                         </div>
                         <div class="comment-actions">
-                            ${!comment.approved ? `
-                                <button class="btn btn-success btn-sm" onclick="approveComment('${comment.id}')">
-                                    <i class="fas fa-check"></i> Approuver
-                                </button>
-                            ` : ''}
                             <button class="btn btn-danger btn-sm" onclick="deleteComment('${comment.id}')">
                                 <i class="fas fa-trash"></i> Supprimer
                             </button>
@@ -2128,60 +2191,16 @@
             if (!confirm('Êtes-vous sûr de vouloir bannir cet utilisateur ?')) return;
             
             try {
+                // MODIFIÉ: Ajouter le champ banned qui n'existait pas
                 await db.collection(userType + 's').doc(userId).update({
                     banned: true,
-                    updatedAt: new Date()
+                    bannedAt: new Date()
                 });
                 await loadUsersList();
                 showAlert('formAlert', 'Utilisateur banni avec succès', 'success');
             } catch (error) {
                 console.error('Erreur bannissement:', error);
                 showAlert('formAlert', 'Erreur lors du bannissement', 'danger');
-            }
-        }
-
-        async function unbanUser(userId, userType) {
-            try {
-                await db.collection(userType + 's').doc(userId).update({
-                    banned: false,
-                    updatedAt: new Date()
-                });
-                await loadUsersList();
-                showAlert('formAlert', 'Utilisateur débanni avec succès', 'success');
-            } catch (error) {
-                console.error('Erreur débannissement:', error);
-                showAlert('formAlert', 'Erreur lors du débannissement', 'danger');
-            }
-        }
-
-        async function toggleTeacherVerification(userId) {
-            try {
-                const teacherDoc = await db.collection('teachers').doc(userId).get();
-                const currentStatus = teacherDoc.data().verified;
-                
-                await db.collection('teachers').doc(userId).update({
-                    verified: !currentStatus
-                });
-                
-                await loadUsersList();
-                showAlert('formAlert', `Professeur ${!currentStatus ? 'vérifié' : 'dévérifié'} avec succès`, 'success');
-            } catch (error) {
-                console.error('Erreur vérification professeur:', error);
-                showAlert('formAlert', 'Erreur lors de la vérification', 'danger');
-            }
-        }
-
-        async function approveComment(commentId) {
-            try {
-                await db.collection('comments').doc(commentId).update({
-                    approved: true
-                });
-                await loadAdminComments();
-                await loadComments();
-                showAlert('formAlert', 'Commentaire approuvé avec succès', 'success');
-            } catch (error) {
-                console.error('Erreur approbation commentaire:', error);
-                showAlert('formAlert', 'Erreur lors de l\'approbation', 'danger');
             }
         }
 
@@ -2201,6 +2220,7 @@
 
         async function savePlatformSettings() {
             try {
+                // Sauvegarder les paramètres
                 const primaryPrice = document.getElementById('primaryPrice').value;
                 const secondaryPrice = document.getElementById('secondaryPrice').value;
                 const commissionRate = document.getElementById('commissionRate').value;
@@ -2288,11 +2308,10 @@
         window.saveProfile = saveProfile;
         window.showTab = showTab;
         window.banUser = banUser;
-        window.unbanUser = unbanUser;
-        window.toggleTeacherVerification = toggleTeacherVerification;
-        window.approveComment = approveComment;
         window.deleteComment = deleteComment;
         window.savePlatformSettings = savePlatformSettings;
+        window.showAdminPanel = showAdminPanel;
+        window.updateInvitationStatus = updateInvitationStatus;
     </script>
 </body>
 </html>
