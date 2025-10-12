@@ -1,4 +1,4 @@
-<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -1419,12 +1419,7 @@
                     .orderBy('createdAt', 'desc')
                     .get();
 
-                const comments = [];
-                snapshot.forEach(doc => {
-                    comments.push({ id: doc.id, ...doc.data() });
-                });
-
-                if (comments.length === 0) {
+                if (snapshot.empty) {
                     commentsContainer.innerHTML = `
                         <div style="text-align: center; padding: 2rem;">
                             <i class="fas fa-comments fa-3x" style="color: #6c757d; margin-bottom: 1rem;"></i>
@@ -1434,6 +1429,11 @@
                     `;
                     return;
                 }
+
+                const comments = [];
+                snapshot.forEach(doc => {
+                    comments.push({ id: doc.id, ...doc.data() });
+                });
 
                 commentsContainer.innerHTML = comments.map(comment => `
                     <div class="comment-card">
@@ -1449,7 +1449,13 @@
 
             } catch (error) {
                 console.error('Erreur chargement commentaires:', error);
-                commentsContainer.innerHTML = '<p>Erreur lors du chargement des commentaires</p>';
+                commentsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <i class="fas fa-exclamation-triangle fa-3x" style="color: #dc3545; margin-bottom: 1rem;"></i>
+                        <h3 style="color: #dc3545;">Erreur de chargement</h3>
+                        <p>Impossible de charger les commentaires. Veuillez réessayer.</p>
+                    </div>
+                `;
             }
         }
 
@@ -1691,7 +1697,13 @@
                 }
             } catch (error) {
                 console.error('Erreur chargement panier:', error);
-                cartContainer.innerHTML = '<p>Erreur lors du chargement</p>';
+                cartContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <i class="fas fa-exclamation-triangle fa-3x" style="color: #dc3545; margin-bottom: 1rem;"></i>
+                        <h3 style="color: #dc3545;">Erreur de chargement</h3>
+                        <p>Impossible de charger vos données. Veuillez réessayer.</p>
+                    </div>
+                `;
             }
         }
 
@@ -1705,7 +1717,13 @@
                     .get();
 
                 if (snapshot.empty) {
-                    cartContainer.innerHTML = '<p>Aucune invitation envoyée</p>';
+                    cartContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-envelope fa-3x" style="color: #6c757d; margin-bottom: 1rem;"></i>
+                            <h3 style="color: #6c757d;">Aucune invitation envoyée</h3>
+                            <p>Recherchez des professeurs et envoyez-leur des invitations!</p>
+                        </div>
+                    `;
                     return;
                 }
 
@@ -1714,19 +1732,30 @@
 
                 for (const doc of snapshot.docs) {
                     const invitation = { id: doc.id, ...doc.data() };
+                    
+                    // VÉRIFICATION CRITIQUE : Vérifier que le teacher existe
                     const teacherDoc = await db.collection('teachers').doc(invitation.teacherId).get();
                     
-                    if (!teacherDoc.exists) continue;
+                    if (!teacherDoc.exists) {
+                        console.warn(`Teacher ${invitation.teacherId} non trouvé pour l'invitation ${invitation.id}`);
+                        continue; // Passer à l'invitation suivante
+                    }
                     
                     const teacher = teacherDoc.data();
+                    
+                    // Vérifier que les données nécessaires existent
+                    if (!teacher || !teacher.name) {
+                        console.warn(`Données teacher incomplètes pour ${invitation.teacherId}`);
+                        continue;
+                    }
 
                     const cartItem = document.createElement('div');
                     cartItem.className = `cart-item ${invitation.status}`;
                     cartItem.innerHTML = `
                         <div class="status-dot ${invitation.status}"></div>
-                        <h4>${teacher.name}</h4>
-                        <p><strong>Matières:</strong> ${teacher.subjects.join(', ')}</p>
-                        <p><strong>Niveaux:</strong> ${teacher.classLevels.join(', ')}</p>
+                        <h4>${teacher.name || 'Professeur'}</h4>
+                        <p><strong>Matières:</strong> ${teacher.subjects ? teacher.subjects.join(', ') : 'Non spécifié'}</p>
+                        <p><strong>Niveaux:</strong> ${teacher.classLevels ? teacher.classLevels.join(', ') : 'Non spécifié'}</p>
                         <div class="status-info">
                             ${invitation.status === 'pending' ? '⏳ En attente de réponse' : 
                               invitation.status === 'accepted' ? '✅ Accepté' : '❌ Refusé'}
@@ -1734,28 +1763,50 @@
                         ${invitation.status === 'accepted' ? `
                             <div class="contact-info">
                                 <h5><i class="fas fa-address-book"></i> Contact du Professeur</h5>
-                                <p><strong>Téléphone:</strong> ${teacher.phone}</p>
-                                <p><strong>Adresse:</strong> ${teacher.address}</p>
-                                <div class="teacher-actions">
-                                    <button class="btn btn-whatsapp contact-teacher" data-phone="${teacher.phone}" data-name="${teacher.name}">
-                                        <i class="fab fa-whatsapp"></i> WhatsApp
-                                    </button>
-                                    <button class="btn btn-primary contact-teacher" data-phone="${teacher.phone}">
-                                        <i class="fas fa-phone"></i> Appeler
-                                    </button>
-                                </div>
+                                <p><strong>Téléphone:</strong> ${teacher.phone || 'Non disponible'}</p>
+                                <p><strong>Adresse:</strong> ${teacher.address || 'Non disponible'}</p>
+                                ${teacher.phone ? `
+                                    <div class="teacher-actions">
+                                        <button class="btn btn-whatsapp contact-teacher" data-phone="${teacher.phone}" data-name="${teacher.name}">
+                                            <i class="fab fa-whatsapp"></i> WhatsApp
+                                        </button>
+                                        <button class="btn btn-primary contact-teacher" data-phone="${teacher.phone}">
+                                            <i class="fas fa-phone"></i> Appeler
+                                        </button>
+                                    </div>
+                                ` : '<p><em>Coordonnées non disponibles</em></p>'}
                             </div>
                         ` : ''}
                     `;
                     cartItems.appendChild(cartItem);
                 }
 
-                cartContainer.appendChild(cartItems);
-                setupContactButtons();
+                // Vérifier si des items ont été ajoutés
+                if (cartItems.children.length === 0) {
+                    cartContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-exclamation-triangle fa-3x" style="color: #ffc107; margin-bottom: 1rem;"></i>
+                            <h3 style="color: #6c757d;">Données temporairement indisponibles</h3>
+                            <p>Veuillez réessayer ultérieurement.</p>
+                        </div>
+                    `;
+                } else {
+                    cartContainer.appendChild(cartItems);
+                    setupContactButtons();
+                }
 
             } catch (error) {
                 console.error('Erreur panier étudiant:', error);
-                cartContainer.innerHTML = '<p>Erreur lors du chargement des invitations</p>';
+                cartContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <i class="fas fa-exclamation-circle fa-3x" style="color: #dc3545; margin-bottom: 1rem;"></i>
+                        <h3 style="color: #dc3545;">Erreur de chargement</h3>
+                        <p>Impossible de charger vos invitations. Veuillez réessayer.</p>
+                        <button class="btn btn-primary" onclick="showCart()">
+                            <i class="fas fa-redo"></i> Réessayer
+                        </button>
+                    </div>
+                `;
             }
         }
 
@@ -1769,7 +1820,13 @@
                     .get();
 
                 if (snapshot.empty) {
-                    cartContainer.innerHTML = '<p>Aucune demande reçue</p>';
+                    cartContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-bell fa-3x" style="color: #6c757d; margin-bottom: 1rem;"></i>
+                            <h3 style="color: #6c757d;">Aucune demande reçue</h3>
+                            <p>Les élèves vous trouveront bientôt!</p>
+                        </div>
+                    `;
                     return;
                 }
 
@@ -1784,7 +1841,10 @@
                         .where('userId', '==', invitation.studentId)
                         .get();
 
-                    if (studentSnapshot.empty) continue;
+                    if (studentSnapshot.empty) {
+                        console.warn(`Student ${invitation.studentId} non trouvé pour l'invitation ${invitation.id}`);
+                        continue;
+                    }
                     
                     const student = studentSnapshot.docs[0].data();
 
@@ -1838,27 +1898,47 @@
                     cartItems.appendChild(cartItem);
                 }
 
-                cartContainer.appendChild(cartItems);
+                // Vérifier si des items ont été ajoutés
+                if (cartItems.children.length === 0) {
+                    cartContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-exclamation-triangle fa-3x" style="color: #ffc107; margin-bottom: 1rem;"></i>
+                            <h3 style="color: #6c757d;">Données temporairement indisponibles</h3>
+                            <p>Veuillez réessayer ultérieurement.</p>
+                        </div>
+                    `;
+                } else {
+                    cartContainer.appendChild(cartItems);
 
-                document.querySelectorAll('.accept-invitation').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const invitationId = this.getAttribute('data-invitation-id');
-                        updateInvitationStatus(invitationId, 'accepted');
+                    document.querySelectorAll('.accept-invitation').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const invitationId = this.getAttribute('data-invitation-id');
+                            updateInvitationStatus(invitationId, 'accepted');
+                        });
                     });
-                });
 
-                document.querySelectorAll('.reject-invitation').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const invitationId = this.getAttribute('data-invitation-id');
-                        updateInvitationStatus(invitationId, 'rejected');
+                    document.querySelectorAll('.reject-invitation').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const invitationId = this.getAttribute('data-invitation-id');
+                            updateInvitationStatus(invitationId, 'rejected');
+                        });
                     });
-                });
 
-                setupContactButtons();
+                    setupContactButtons();
+                }
 
             } catch (error) {
                 console.error('Erreur panier professeur:', error);
-                cartContainer.innerHTML = '<p>Erreur lors du chargement des demandes</p>';
+                cartContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <i class="fas fa-exclamation-circle fa-3x" style="color: #dc3545; margin-bottom: 1rem;"></i>
+                        <h3 style="color: #dc3545;">Erreur de chargement</h3>
+                        <p>Impossible de charger les demandes. Veuillez réessayer.</p>
+                        <button class="btn btn-primary" onclick="showCart()">
+                            <i class="fas fa-redo"></i> Réessayer
+                        </button>
+                    </div>
+                `;
             }
         }
 
