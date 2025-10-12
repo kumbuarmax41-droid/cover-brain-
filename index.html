@@ -361,35 +361,6 @@
             justify-content: center;
         }
 
-        /* ===== RATING SYSTEM ===== */
-        .rating-stars {
-            display: flex;
-            gap: 5px;
-            margin: 10px 0;
-        }
-
-        .rating-star {
-            color: #ddd;
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: color 0.3s;
-        }
-
-        .rating-star.active {
-            color: #ffc107;
-        }
-
-        .rating-value {
-            font-weight: bold;
-            color: var(--primary);
-            margin-left: 10px;
-        }
-
-        .rating-count {
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
         /* ===== ADMIN PANEL ===== */
         .admin-stats {
             display: grid;
@@ -834,7 +805,7 @@
                         </button>
                         <div class="more-menu" id="moreMenu">
                             <a href="#commentaires">Commentaires</a>
-                            <a href="#inscription" id="inscriptionLink">S'inscrire</a>
+                            <a href="#inscription">S'inscrire</a>
                             <a href="#about">À propos</a>
                         </div>
                     </div>
@@ -861,7 +832,7 @@
                 <h1>Trouvez le répétiteur idéal pour réussir</h1>
                 <p>Cover Brain connecte les élèves avec des répétiteurs qualifiés pour un soutien scolaire personnalisé à domicile.</p>
                 <p><strong>Une innovation Xtronics</strong></p>
-                <a href="#recherche" class="btn">Commencer maintenant</a>
+                <a href="#inscription" class="btn">Commencer maintenant</a>
             </div>
         </section>
 
@@ -966,7 +937,7 @@
         </section>
 
         <!-- ===== REGISTRATION SECTION ===== -->
-        <section class="section hidden" id="inscription">
+        <section class="section" id="inscription">
             <div class="container">
                 <h2 class="section-title">Rejoindre Cover Brain</h2>
                 <div class="form-container">
@@ -1070,7 +1041,7 @@
         </section>
 
         <!-- ===== COMMENTS SECTION ===== -->
-        <section class="section hidden" id="commentaires">
+        <section class="section" id="commentaires">
             <div class="container">
                 <h2 class="section-title">Espace Commentaires</h2>
                 <div class="comments-section">
@@ -1098,7 +1069,7 @@
         </section>
 
         <!-- ===== ABOUT SECTION ===== -->
-        <section class="section hidden" id="about">
+        <section class="section" id="about">
             <div class="container">
                 <div class="about-section">
                     <h3>À Propos de Cover Brain</h3>
@@ -1142,32 +1113,6 @@
         </div>
     </div>
 
-    <!-- Modal de notation -->
-    <div class="modal" id="ratingModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Noter le professeur</h2>
-                <button class="close-btn" id="closeRatingModal">&times;</button>
-            </div>
-            <div id="ratingAlert" class="alert hidden"></div>
-            <div class="form-group">
-                <label>Note</label>
-                <div class="rating-stars" id="ratingStars">
-                    <span class="rating-star" data-rating="1">★</span>
-                    <span class="rating-star" data-rating="2">★</span>
-                    <span class="rating-star" data-rating="3">★</span>
-                    <span class="rating-star" data-rating="4">★</span>
-                    <span class="rating-star" data-rating="5">★</span>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="ratingComment">Commentaire (optionnel)</label>
-                <textarea id="ratingComment" class="form-control" placeholder="Partagez votre expérience avec ce professeur..."></textarea>
-            </div>
-            <button class="btn btn-primary" id="submitRatingBtn">Soumettre l'avis</button>
-        </div>
-    </div>
-
     <script>
         // ===== FIREBASE CONFIGURATION =====
         const firebaseConfig = {
@@ -1193,7 +1138,6 @@
         // ===== GLOBAL VARIABLES =====
         let currentUser = JSON.parse(localStorage.getItem('coverBrainCurrentUser')) || null;
         let isLoggedIn = currentUser !== null;
-        let currentRatingTeacherId = null;
 
         // ===== APPLICATION INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', function() {
@@ -1218,16 +1162,6 @@
 
             document.addEventListener('click', function() {
                 document.getElementById('moreMenu').classList.remove('show');
-            });
-
-            // Navigation dans le menu Plus
-            document.querySelectorAll('.more-menu a').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetId = this.getAttribute('href').substring(1);
-                    showTab(targetId);
-                    document.getElementById('moreMenu').classList.remove('show');
-                });
             });
 
             // Inscriptions
@@ -1281,13 +1215,6 @@
 
             document.getElementById('loginBtn').addEventListener('click', loginUser);
             document.getElementById('logoutNavItem').addEventListener('click', logoutUser);
-
-            // Notation
-            document.getElementById('closeRatingModal').addEventListener('click', function() {
-                document.getElementById('ratingModal').style.display = 'none';
-            });
-
-            document.getElementById('submitRatingBtn').addEventListener('click', submitRating);
 
             // Fermeture modals
             document.getElementById('closeLoginModal').addEventListener('click', function() {
@@ -1349,191 +1276,9 @@
             } else if (tabId === 'adminSection') {
                 loadAdminPanel();
             }
-
-            // Cacher l'inscription si l'utilisateur est connecté
-            if (tabId === 'inscription' && isLoggedIn) {
-                showAlert('formAlert', 'Vous êtes déjà connecté!', 'info');
-                showTab('accueil');
-                return;
-            }
         }
 
-        // ===== SYSTÈME DE NOTATION =====
-        function setupRatingStars() {
-            const stars = document.querySelectorAll('#ratingStars .rating-star');
-            let currentRating = 0;
-
-            stars.forEach(star => {
-                star.addEventListener('click', function() {
-                    const rating = parseInt(this.getAttribute('data-rating'));
-                    currentRating = rating;
-                    
-                    // Mettre à jour l'affichage des étoiles
-                    stars.forEach(s => {
-                        const starRating = parseInt(s.getAttribute('data-rating'));
-                        if (starRating <= rating) {
-                            s.classList.add('active');
-                        } else {
-                            s.classList.remove('active');
-                        }
-                    });
-                });
-
-                star.addEventListener('mouseover', function() {
-                    const rating = parseInt(this.getAttribute('data-rating'));
-                    
-                    stars.forEach(s => {
-                        const starRating = parseInt(s.getAttribute('data-rating'));
-                        if (starRating <= rating) {
-                            s.style.color = '#ffc107';
-                        } else {
-                            s.style.color = '#ddd';
-                        }
-                    });
-                });
-
-                star.addEventListener('mouseout', function() {
-                    stars.forEach(s => {
-                        if (parseInt(s.getAttribute('data-rating')) <= currentRating) {
-                            s.style.color = '#ffc107';
-                        } else {
-                            s.style.color = '#ddd';
-                        }
-                    });
-                });
-            });
-
-            return {
-                getRating: () => currentRating,
-                reset: () => {
-                    currentRating = 0;
-                    stars.forEach(star => {
-                        star.classList.remove('active');
-                        star.style.color = '#ddd';
-                    });
-                }
-            };
-        }
-
-        function openRatingModal(teacherId) {
-            currentRatingTeacherId = teacherId;
-            document.getElementById('ratingModal').style.display = 'flex';
-            ratingSystem.reset();
-            document.getElementById('ratingComment').value = '';
-        }
-
-        async function submitRating() {
-            const rating = ratingSystem.getRating();
-            const comment = document.getElementById('ratingComment').value;
-
-            if (rating === 0) {
-                showAlert('ratingAlert', 'Veuillez sélectionner une note', 'danger');
-                return;
-            }
-
-            if (!currentUser) {
-                showAlert('ratingAlert', 'Veuillez vous connecter pour noter', 'danger');
-                return;
-            }
-
-            try {
-                // Vérifier si l'utilisateur a déjà noté ce professeur
-                const existingRating = await db.collection('ratings')
-                    .where('teacherId', '==', currentRatingTeacherId)
-                    .where('studentId', '==', currentUser.id)
-                    .get();
-
-                if (!existingRating.empty) {
-                    showAlert('ratingAlert', 'Vous avez déjà noté ce professeur', 'warning');
-                    return;
-                }
-
-                // Sauvegarder la notation
-                await db.collection('ratings').add({
-                    teacherId: currentRatingTeacherId,
-                    studentId: currentUser.id,
-                    studentName: currentUser.name,
-                    rating: rating,
-                    comment: comment,
-                    createdAt: new Date()
-                });
-
-                // Mettre à jour la note moyenne du professeur
-                await updateTeacherAverageRating(currentRatingTeacherId);
-
-                showAlert('ratingAlert', 'Merci pour votre notation!', 'success');
-                document.getElementById('ratingModal').style.display = 'none';
-
-                // Recharger les résultats si on est dans la recherche
-                const searchInput = document.getElementById('searchInput');
-                if (searchInput.value.trim()) {
-                    searchTeachers(searchInput.value.trim());
-                }
-
-            } catch (error) {
-                console.error('Erreur soumission notation:', error);
-                showAlert('ratingAlert', 'Erreur lors de la soumission de la notation', 'danger');
-            }
-        }
-
-        async function updateTeacherAverageRating(teacherId) {
-            try {
-                const ratingsSnapshot = await db.collection('ratings')
-                    .where('teacherId', '==', teacherId)
-                    .get();
-
-                if (ratingsSnapshot.empty) return;
-
-                let totalRating = 0;
-                let ratingCount = 0;
-
-                ratingsSnapshot.forEach(doc => {
-                    const rating = doc.data();
-                    totalRating += rating.rating;
-                    ratingCount++;
-                });
-
-                const averageRating = totalRating / ratingCount;
-
-                // Mettre à jour la note moyenne dans le document du professeur
-                const teacherSnapshot = await db.collection('teachers')
-                    .where('userId', '==', teacherId)
-                    .get();
-
-                if (!teacherSnapshot.empty) {
-                    await db.collection('teachers').doc(teacherSnapshot.docs[0].id).update({
-                        averageRating: averageRating,
-                        ratingCount: ratingCount
-                    });
-                }
-
-            } catch (error) {
-                console.error('Erreur mise à jour note moyenne:', error);
-            }
-        }
-
-        function displayRatingStars(rating) {
-            const fullStars = Math.floor(rating);
-            const hasHalfStar = rating % 1 !== 0;
-            let starsHtml = '';
-
-            for (let i = 1; i <= 5; i++) {
-                if (i <= fullStars) {
-                    starsHtml += '<span class="rating-star active">★</span>';
-                } else if (i === fullStars + 1 && hasHalfStar) {
-                    starsHtml += '<span class="rating-star active">★</span>';
-                } else {
-                    starsHtml += '<span class="rating-star">★</span>';
-                }
-            }
-
-            return starsHtml;
-        }
-
-        // Initialiser le système de notation
-        const ratingSystem = setupRatingStars();
-
-        // ===== FONCTIONS EXISTANTES (inchangées) =====
+        // ===== INSCRIPTIONS FIREBASE =====
         async function registerStudent() {
             const studentData = {
                 name: document.getElementById('studentName').value,
@@ -1548,6 +1293,7 @@
             };
 
             try {
+                // Vérifier si l'utilisateur existe déjà
                 const usersSnapshot = await db.collection('users')
                     .where('phone', '==', studentData.phone)
                     .get();
@@ -1557,6 +1303,7 @@
                     return;
                 }
 
+                // Créer l'utilisateur dans Firebase
                 const userRef = await db.collection('users').add({
                     name: studentData.name,
                     phone: studentData.phone,
@@ -1567,6 +1314,7 @@
                     updatedAt: new Date()
                 });
 
+                // Créer l'étudiant dans Firebase
                 await db.collection('students').add({
                     userId: userRef.id,
                     ...studentData,
@@ -1594,12 +1342,11 @@
                 currentStudents: 0,
                 password: document.getElementById('teacherPassword').value,
                 verified: true,
-                averageRating: 0,
-                ratingCount: 0,
                 createdAt: new Date()
             };
 
             try {
+                // Vérifier si l'utilisateur existe déjà
                 const usersSnapshot = await db.collection('users')
                     .where('phone', '==', teacherData.phone)
                     .get();
@@ -1609,6 +1356,7 @@
                     return;
                 }
 
+                // Créer l'utilisateur dans Firebase
                 const userRef = await db.collection('users').add({
                     name: teacherData.name,
                     phone: teacherData.phone,
@@ -1619,6 +1367,7 @@
                     updatedAt: new Date()
                 });
 
+                // Créer le professeur dans Firebase
                 await db.collection('teachers').add({
                     userId: userRef.id,
                     ...teacherData,
@@ -1634,6 +1383,131 @@
             }
         }
 
+        // ===== COMMENTAIRES FIREBASE =====
+        async function addComment() {
+            const author = document.getElementById('commentAuthor').value;
+            const text = document.getElementById('commentText').value;
+
+            if (!author || !text) {
+                showAlert('formAlert', 'Veuillez remplir tous les champs', 'danger');
+                return;
+            }
+
+            try {
+                await db.collection('comments').add({
+                    author: author,
+                    text: text,
+                    approved: true,
+                    createdAt: new Date()
+                });
+
+                await loadComments();
+                document.getElementById('commentForm').reset();
+                showAlert('formAlert', 'Commentaire publié avec succès!', 'success');
+            } catch (error) {
+                console.error('Erreur ajout commentaire:', error);
+                showAlert('formAlert', 'Erreur lors de la publication du commentaire', 'danger');
+            }
+        }
+
+        async function loadComments() {
+            const commentsContainer = document.getElementById('commentsContainer');
+            
+            try {
+                const snapshot = await db.collection('comments')
+                    .where('approved', '==', true)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                const comments = [];
+                snapshot.forEach(doc => {
+                    comments.push({ id: doc.id, ...doc.data() });
+                });
+
+                if (comments.length === 0) {
+                    commentsContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-comments fa-3x" style="color: #6c757d; margin-bottom: 1rem;"></i>
+                            <h3 style="color: #6c757d;">Aucun commentaire pour le moment</h3>
+                            <p>Soyez le premier à partager votre expérience!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                commentsContainer.innerHTML = comments.map(comment => `
+                    <div class="comment-card">
+                        <div class="comment-header">
+                            <span class="comment-author">${comment.author}</span>
+                            <span class="comment-date">${comment.createdAt.toDate().toLocaleDateString('fr-FR')}</span>
+                        </div>
+                        <div class="comment-content">
+                            ${comment.text}
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Erreur chargement commentaires:', error);
+                commentsContainer.innerHTML = '<p>Erreur lors du chargement des commentaires</p>';
+            }
+        }
+
+        // ===== AUTHENTIFICATION FIREBASE =====
+        async function loginUser() {
+            const phone = document.getElementById('loginPhone').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                // Rechercher l'utilisateur dans Firebase
+                const snapshot = await db.collection('users')
+                    .where('phone', '==', phone)
+                    .where('password', '==', password)
+                    .get();
+
+                if (snapshot.empty) {
+                    showAlert('loginAlert', 'Numéro de téléphone ou mot de passe incorrect', 'danger');
+                    return;
+                }
+
+                const userDoc = snapshot.docs[0];
+                const userData = userDoc.data();
+
+                if (userData.banned) {
+                    showAlert('loginAlert', 'Votre compte a été suspendu', 'danger');
+                    return;
+                }
+
+                // Connexion réussie
+                currentUser = {
+                    id: userDoc.id,
+                    ...userData
+                };
+                
+                isLoggedIn = true;
+                localStorage.setItem('coverBrainCurrentUser', JSON.stringify(currentUser));
+                
+                document.getElementById('loginModal').style.display = 'none';
+                checkLoginStatus();
+                showAlert('formAlert', 'Connexion réussie!', 'success');
+                showTab('accueil');
+
+            } catch (error) {
+                console.error('Erreur connexion:', error);
+                showAlert('loginAlert', 'Erreur lors de la connexion', 'danger');
+            }
+        }
+
+        function logoutUser() {
+            currentUser = null;
+            isLoggedIn = false;
+            localStorage.removeItem('coverBrainCurrentUser');
+            checkLoginStatus();
+            showAlert('formAlert', 'Déconnexion réussie', 'success');
+            showTab('accueil');
+        }
+
+        // ===== RECHERCHE FIREBASE =====
         async function searchTeachers(searchTerm) {
             if (!isLoggedIn) {
                 showAlert('formAlert', 'Connectez-vous pour rechercher des professeurs', 'danger');
@@ -1652,6 +1526,7 @@
                 
                 snapshot.forEach(doc => {
                     const teacher = { id: doc.id, ...doc.data() };
+                    // Vérifier si le professeur n'est pas banni
                     if (!teacher.banned && teacher.verified) {
                         const searchLower = searchTerm.toLowerCase();
                         const matches = teacher.subjects.some(s => 
@@ -1702,15 +1577,6 @@
                 teacherCard.className = 'teacher-card';
                 teacherCard.innerHTML = `
                     <h3>${teacher.name}</h3>
-                    
-                    ${teacher.averageRating > 0 ? `
-                        <div class="rating-stars" style="margin: 10px 0;">
-                            ${displayRatingStars(teacher.averageRating)}
-                            <span class="rating-value">${teacher.averageRating.toFixed(1)}</span>
-                            <span class="rating-count">(${teacher.ratingCount} avis)</span>
-                        </div>
-                    ` : '<div style="margin: 10px 0; color: #6c757d;">Aucune note</div>'}
-                    
                     <div class="teacher-info">
                         <div class="info-item">
                             <i class="fas fa-book"></i>
@@ -1722,11 +1588,11 @@
                         </div>
                         <div class="info-item">
                             <i class="fas fa-school"></i>
-                            <span><strong>Établissement:</strong> ${teacher.school}</span>
+                            <span><strong>Formation:</strong> ${teacher.school}</span>
                         </div>
                         <div class="info-item">
                             <i class="fas fa-map-marker-alt"></i>
-                            <span><strong>Adresse:</strong> ${teacher.address}</span>
+                            <span><strong>Zone:</strong> ${teacher.address}</span>
                         </div>
                         <div class="info-item">
                             <i class="fas fa-users"></i>
@@ -1735,14 +1601,9 @@
                     </div>
                     <div class="price-tag">${price}$/séance</div>
                     <div class="teacher-actions">
-                        <button class="btn btn-success invite-teacher" data-teacher-id="${teacher.userId}">
+                        <button class="btn btn-success invite-teacher" data-teacher-id="${teacher.id}">
                             <i class="fas fa-user-plus"></i> Inviter
                         </button>
-                        ${currentUser && currentUser.type === 'student' ? `
-                            <button class="btn btn-primary rate-teacher" data-teacher-id="${teacher.userId}">
-                                <i class="fas fa-star"></i> Noter
-                            </button>
-                        ` : ''}
                     </div>
                 `;
 
@@ -1756,24 +1617,794 @@
                 });
             });
 
-            document.querySelectorAll('.rate-teacher').forEach(button => {
-                button.addEventListener('click', function() {
-                    const teacherId = this.getAttribute('data-teacher-id');
-                    openRatingModal(teacherId);
-                });
-            });
-
             document.getElementById('resultsSection').classList.remove('hidden');
         }
 
-        // ===== FONCTIONS EXISTANTES (suite) =====
-        // [Toutes les autres fonctions restent identiques : loginUser, logoutUser, addComment, loadComments, 
-        // inviteTeacher, showCart, displayStudentCart, displayTeacherCart, updateInvitationStatus, 
-        // setupContactButtons, showProfile, saveProfile, loadAdminPanel, loadAdminStats, loadUsersList, 
-        // loadAdminComments, banUser, unbanUser, toggleTeacherVerification, approveComment, deleteComment, 
-        // savePlatformSettings, createDefaultAdmin, checkLoginStatus, updateCartBadge, showAlert]
+        // ===== INVITATIONS FIREBASE =====
+        async function inviteTeacher(teacherId) {
+            if (!currentUser) return;
 
-        // ===== FONCTIONS GLOBALES =====
+            try {
+                // Vérifier si une invitation existe déjà
+                const existingInvitations = await db.collection('invitations')
+                    .where('studentId', '==', currentUser.id)
+                    .where('teacherId', '==', teacherId)
+                    .get();
+
+                if (!existingInvitations.empty) {
+                    showAlert('formAlert', 'Vous avez déjà envoyé une invitation à ce professeur', 'warning');
+                    return;
+                }
+
+                // Récupérer les infos du professeur
+                const teacherDoc = await db.collection('teachers').doc(teacherId).get();
+                const teacher = teacherDoc.data();
+
+                // Récupérer les infos de l'étudiant
+                const studentSnapshot = await db.collection('students')
+                    .where('userId', '==', currentUser.id)
+                    .get();
+                const student = studentSnapshot.docs[0].data();
+
+                // Créer l'invitation
+                await db.collection('invitations').add({
+                    studentId: currentUser.id,
+                    teacherId: teacherId,
+                    studentName: currentUser.name,
+                    teacherName: teacher.name,
+                    subjects: teacher.subjects,
+                    level: student.level,
+                    price: student.level === 'primaire' ? 5 : 7,
+                    status: 'pending',
+                    createdAt: new Date()
+                });
+
+                showAlert('formAlert', 'Invitation envoyée! Le professeur verra vos informations.', 'success');
+
+                // Recharger les résultats
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput.value.trim()) {
+                    searchTeachers(searchInput.value.trim());
+                }
+
+            } catch (error) {
+                console.error('Erreur envoi invitation:', error);
+                showAlert('formAlert', 'Erreur lors de l\'envoi de l\'invitation', 'danger');
+            }
+        }
+
+        // ===== PANIER FIREBASE =====
+        async function showCart() {
+            const cartContainer = document.getElementById('cartContainer');
+            const cartTitle = document.getElementById('cartTitle');
+            cartContainer.innerHTML = '';
+
+            if (!currentUser) return;
+
+            try {
+                if (currentUser.type === 'student') {
+                    cartTitle.textContent = 'Mes Professeurs Invités';
+                    await displayStudentCart();
+                } else if (currentUser.type === 'teacher') {
+                    cartTitle.textContent = 'Mes Demandes d\'Élèves';
+                    await displayTeacherCart();
+                }
+            } catch (error) {
+                console.error('Erreur chargement panier:', error);
+                cartContainer.innerHTML = '<p>Erreur lors du chargement</p>';
+            }
+        }
+
+        async function displayStudentCart() {
+            const cartContainer = document.getElementById('cartContainer');
+            
+            try {
+                const snapshot = await db.collection('invitations')
+                    .where('studentId', '==', currentUser.id)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                if (snapshot.empty) {
+                    cartContainer.innerHTML = '<p>Aucune invitation envoyée</p>';
+                    return;
+                }
+
+                const cartItems = document.createElement('div');
+                cartItems.className = 'cart-items';
+
+                for (const doc of snapshot.docs) {
+                    const invitation = { id: doc.id, ...doc.data() };
+                    const teacherDoc = await db.collection('teachers').doc(invitation.teacherId).get();
+                    
+                    if (!teacherDoc.exists) continue;
+                    
+                    const teacher = teacherDoc.data();
+
+                    const cartItem = document.createElement('div');
+                    cartItem.className = `cart-item ${invitation.status}`;
+                    cartItem.innerHTML = `
+                        <div class="status-dot ${invitation.status}"></div>
+                        <h4>${teacher.name}</h4>
+                        <p><strong>Matières:</strong> ${teacher.subjects.join(', ')}</p>
+                        <p><strong>Niveaux:</strong> ${teacher.classLevels.join(', ')}</p>
+                        <div class="status-info">
+                            ${invitation.status === 'pending' ? '⏳ En attente de réponse' : 
+                              invitation.status === 'accepted' ? '✅ Accepté' : '❌ Refusé'}
+                        </div>
+                        ${invitation.status === 'accepted' ? `
+                            <div class="contact-info">
+                                <h5><i class="fas fa-address-book"></i> Contact du Professeur</h5>
+                                <p><strong>Téléphone:</strong> ${teacher.phone}</p>
+                                <p><strong>Adresse:</strong> ${teacher.address}</p>
+                                <div class="teacher-actions">
+                                    <button class="btn btn-whatsapp contact-teacher" data-phone="${teacher.phone}" data-name="${teacher.name}">
+                                        <i class="fab fa-whatsapp"></i> WhatsApp
+                                    </button>
+                                    <button class="btn btn-primary contact-teacher" data-phone="${teacher.phone}">
+                                        <i class="fas fa-phone"></i> Appeler
+                                    </button>
+                                </div>
+                            </div>
+                        ` : ''}
+                    `;
+                    cartItems.appendChild(cartItem);
+                }
+
+                cartContainer.appendChild(cartItems);
+                setupContactButtons();
+
+            } catch (error) {
+                console.error('Erreur panier étudiant:', error);
+                cartContainer.innerHTML = '<p>Erreur lors du chargement des invitations</p>';
+            }
+        }
+
+        async function displayTeacherCart() {
+            const cartContainer = document.getElementById('cartContainer');
+            
+            try {
+                const snapshot = await db.collection('invitations')
+                    .where('teacherId', '==', currentUser.id)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                if (snapshot.empty) {
+                    cartContainer.innerHTML = '<p>Aucune demande reçue</p>';
+                    return;
+                }
+
+                const cartItems = document.createElement('div');
+                cartItems.className = 'cart-items';
+
+                for (const doc of snapshot.docs) {
+                    const invitation = { id: doc.id, ...doc.data() };
+                    
+                    // Trouver l'étudiant
+                    const studentSnapshot = await db.collection('students')
+                        .where('userId', '==', invitation.studentId)
+                        .get();
+
+                    if (studentSnapshot.empty) continue;
+                    
+                    const student = studentSnapshot.docs[0].data();
+
+                    const cartItem = document.createElement('div');
+                    cartItem.className = `cart-item ${invitation.status}`;
+                    cartItem.innerHTML = `
+                        <div class="status-dot ${invitation.status}"></div>
+                        <h4>${student.name}</h4>
+                        <div class="student-info">
+                            <div class="info-item">
+                                <i class="fas fa-phone"></i>
+                                <span><strong>Téléphone:</strong> ${student.phone}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-graduation-cap"></i>
+                                <span><strong>Niveau:</strong> ${student.level} - ${student.class}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-school"></i>
+                                <span><strong>École:</strong> ${student.school}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span><strong>Adresse:</strong> ${student.address}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fas fa-birthday-cake"></i>
+                                <span><strong>Âge:</strong> ${student.age} ans</span>
+                            </div>
+                        </div>
+                        <div class="cart-item-actions">
+                            ${invitation.status === 'pending' ? `
+                                <button class="btn btn-success accept-invitation" data-invitation-id="${invitation.id}">
+                                    <i class="fas fa-check"></i> Accepter
+                                </button>
+                                <button class="btn btn-danger reject-invitation" data-invitation-id="${invitation.id}">
+                                    <i class="fas fa-times"></i> Refuser
+                                </button>
+                            ` : `
+                                <button class="btn btn-${invitation.status === 'accepted' ? 'success' : 'danger'}" disabled>
+                                    ${invitation.status === 'accepted' ? '✅ Accepté' : '❌ Refusé'}
+                                </button>
+                                ${invitation.status === 'accepted' ? `
+                                    <button class="btn btn-whatsapp contact-student" data-phone="${student.phone}" data-name="${student.name}">
+                                        <i class="fab fa-whatsapp"></i> Contacter
+                                    </button>
+                                ` : ''}
+                            `}
+                        </div>
+                    `;
+                    cartItems.appendChild(cartItem);
+                }
+
+                cartContainer.appendChild(cartItems);
+
+                document.querySelectorAll('.accept-invitation').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const invitationId = this.getAttribute('data-invitation-id');
+                        updateInvitationStatus(invitationId, 'accepted');
+                    });
+                });
+
+                document.querySelectorAll('.reject-invitation').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const invitationId = this.getAttribute('data-invitation-id');
+                        updateInvitationStatus(invitationId, 'rejected');
+                    });
+                });
+
+                setupContactButtons();
+
+            } catch (error) {
+                console.error('Erreur panier professeur:', error);
+                cartContainer.innerHTML = '<p>Erreur lors du chargement des demandes</p>';
+            }
+        }
+
+        async function updateInvitationStatus(invitationId, status) {
+            try {
+                await db.collection('invitations').doc(invitationId).update({
+                    status: status,
+                    respondedAt: new Date()
+                });
+
+                if (status === 'accepted') {
+                    // Mettre à jour le compteur d'élèves du professeur
+                    const invitationDoc = await db.collection('invitations').doc(invitationId).get();
+                    const invitation = invitationDoc.data();
+                    
+                    const teacherSnapshot = await db.collection('teachers')
+                        .where('userId', '==', currentUser.id)
+                        .get();
+
+                    if (!teacherSnapshot.empty) {
+                        const teacherDoc = teacherSnapshot.docs[0];
+                        const teacher = teacherDoc.data();
+                        
+                        await db.collection('teachers').doc(teacherDoc.id).update({
+                            currentStudents: (teacher.currentStudents || 0) + 1
+                        });
+                    }
+                }
+
+                showCart();
+                showAlert('formAlert', `Invitation ${status === 'accepted' ? 'acceptée' : 'refusée'}`, 'success');
+
+            } catch (error) {
+                console.error('Erreur mise à jour invitation:', error);
+                showAlert('formAlert', 'Erreur lors de la mise à jour', 'danger');
+            }
+        }
+
+        function setupContactButtons() {
+            // Boutons WhatsApp pour les élèves
+            document.querySelectorAll('.contact-teacher').forEach(button => {
+                button.addEventListener('click', function() {
+                    const phone = this.getAttribute('data-phone');
+                    const name = this.getAttribute('data-name');
+                    
+                    if (this.innerHTML.includes('WhatsApp')) {
+                        const message = `Bonjour ${name}%2C%20je%20suis%20intéressé(e)%20par%20vos%20services%20de%20répétition%20sur%20Cover%20Brain.`;
+                        window.open(`https://wa.me/${phone.replace(/\s/g, '')}?text=${message}`, '_blank');
+                    } else {
+                        window.open(`tel:${phone}`, '_self');
+                    }
+                });
+            });
+
+            // Boutons WhatsApp pour les professeurs
+            document.querySelectorAll('.contact-student').forEach(button => {
+                button.addEventListener('click', function() {
+                    const phone = this.getAttribute('data-phone');
+                    const name = this.getAttribute('data-name');
+                    const message = `Bonjour ${name}%2C%20d'accord%20travaillons%20ensemble%20!%20Je%20suis%20disponible%20pour%20commencer%20les%20séances%20de%20répétition.`;
+                    window.open(`https://wa.me/${phone.replace(/\s/g, '')}?text=${message}`, '_blank');
+                });
+            });
+        }
+
+        // ===== PROFIL FIREBASE =====
+        async function showProfile() {
+            const profileFormContainer = document.getElementById('profileFormContainer');
+            profileFormContainer.innerHTML = '';
+
+            if (!currentUser) return;
+
+            try {
+                if (currentUser.type === 'student') {
+                    const snapshot = await db.collection('students')
+                        .where('userId', '==', currentUser.id)
+                        .get();
+
+                    if (snapshot.empty) return;
+                    
+                    const student = snapshot.docs[0].data();
+
+                    profileFormContainer.innerHTML = `
+                        <div class="form-group">
+                            <label>Nom complet</label>
+                            <input type="text" class="form-control" value="${student.name}" id="profileName">
+                        </div>
+                        <div class="form-group">
+                            <label>Niveau scolaire</label>
+                            <select class="form-control" id="profileLevel">
+                                <option value="primaire" ${student.level === 'primaire' ? 'selected' : ''}>Primaire</option>
+                                <option value="secondaire" ${student.level === 'secondaire' ? 'selected' : ''}>Secondaire</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Classe</label>
+                            <input type="text" class="form-control" value="${student.class}" id="profileClass">
+                        </div>
+                        <div class="form-group">
+                            <label>Établissement</label>
+                            <input type="text" class="form-control" value="${student.school}" id="profileSchool">
+                        </div>
+                        <div class="form-group">
+                            <label>Adresse</label>
+                            <input type="text" class="form-control" value="${student.address}" id="profileAddress">
+                        </div>
+                        <button class="btn btn-primary" onclick="saveProfile()">Sauvegarder</button>
+                    `;
+                } else if (currentUser.type === 'teacher') {
+                    const snapshot = await db.collection('teachers')
+                        .where('userId', '==', currentUser.id)
+                        .get();
+
+                    if (snapshot.empty) return;
+                    
+                    const teacher = snapshot.docs[0].data();
+
+                    profileFormContainer.innerHTML = `
+                        <div class="form-group">
+                            <label>Nom complet</label>
+                            <input type="text" class="form-control" value="${teacher.name}" id="profileName">
+                        </div>
+                        <div class="form-group">
+                            <label>Matières enseignées</label>
+                            <input type="text" class="form-control" value="${teacher.subjects.join(', ')}" id="profileSubjects">
+                        </div>
+                        <div class="form-group">
+                            <label>Niveaux enseignés</label>
+                            <input type="text" class="form-control" value="${teacher.classLevels.join(', ')}" id="profileClassLevels">
+                        </div>
+                        <div class="form-group">
+                            <label>Formation/Établissement</label>
+                            <input type="text" class="form-control" value="${teacher.school}" id="profileSchool">
+                        </div>
+                        <div class="form-group">
+                            <label>Adresse</label>
+                            <input type="text" class="form-control" value="${teacher.address}" id="profileAddress">
+                        </div>
+                        <div class="form-group">
+                            <label>Nombre max d'élèves</label>
+                            <input type="number" class="form-control" value="${teacher.maxStudents}" id="profileMaxStudents" min="1" max="20">
+                        </div>
+                        <button class="btn btn-primary" onclick="saveProfile()">Sauvegarder</button>
+                    `;
+                }
+            } catch (error) {
+                console.error('Erreur chargement profil:', error);
+                profileFormContainer.innerHTML = '<p>Erreur lors du chargement du profil</p>';
+            }
+        }
+
+        async function saveProfile() {
+            if (!currentUser) return;
+
+            try {
+                if (currentUser.type === 'student') {
+                    const snapshot = await db.collection('students')
+                        .where('userId', '==', currentUser.id)
+                        .get();
+
+                    if (snapshot.empty) return;
+
+                    const studentDoc = snapshot.docs[0];
+                    await db.collection('students').doc(studentDoc.id).update({
+                        name: document.getElementById('profileName').value,
+                        level: document.getElementById('profileLevel').value,
+                        class: document.getElementById('profileClass').value,
+                        school: document.getElementById('profileSchool').value,
+                        address: document.getElementById('profileAddress').value
+                    });
+
+                    // Mettre à jour aussi dans users
+                    await db.collection('users').doc(currentUser.id).update({
+                        name: document.getElementById('profileName').value,
+                        updatedAt: new Date()
+                    });
+
+                } else if (currentUser.type === 'teacher') {
+                    const snapshot = await db.collection('teachers')
+                        .where('userId', '==', currentUser.id)
+                        .get();
+
+                    if (snapshot.empty) return;
+
+                    const teacherDoc = snapshot.docs[0];
+                    await db.collection('teachers').doc(teacherDoc.id).update({
+                        name: document.getElementById('profileName').value,
+                        subjects: document.getElementById('profileSubjects').value.split(',').map(s => s.trim()),
+                        classLevels: document.getElementById('profileClassLevels').value.split(',').map(s => s.trim()),
+                        school: document.getElementById('profileSchool').value,
+                        address: document.getElementById('profileAddress').value,
+                        maxStudents: parseInt(document.getElementById('profileMaxStudents').value)
+                    });
+
+                    // Mettre à jour aussi dans users
+                    await db.collection('users').doc(currentUser.id).update({
+                        name: document.getElementById('profileName').value,
+                        updatedAt: new Date()
+                    });
+                }
+
+                // Mettre à jour l'utilisateur courant
+                currentUser.name = document.getElementById('profileName').value;
+                localStorage.setItem('coverBrainCurrentUser', JSON.stringify(currentUser));
+                checkLoginStatus();
+
+                showAlert('formAlert', 'Profil mis à jour avec succès!', 'success');
+
+            } catch (error) {
+                console.error('Erreur sauvegarde profil:', error);
+                showAlert('formAlert', 'Erreur lors de la sauvegarde du profil', 'danger');
+            }
+        }
+
+        // ===== PANEL ADMIN COMPLET =====
+        async function showAdminPanel() {
+            showTab('adminSection');
+        }
+
+        async function loadAdminPanel() {
+            if (!currentUser || currentUser.type !== 'admin') return;
+
+            try {
+                await loadAdminStats();
+                await loadUsersList();
+                await loadAdminComments();
+            } catch (error) {
+                console.error('Erreur chargement panel admin:', error);
+            }
+        }
+
+        async function loadAdminStats() {
+            try {
+                // Compter les utilisateurs
+                const usersSnapshot = await db.collection('users').get();
+                const studentsSnapshot = await db.collection('students').get();
+                const teachersSnapshot = await db.collection('teachers').get();
+                const invitationsSnapshot = await db.collection('invitations').get();
+
+                document.getElementById('totalUsers').textContent = usersSnapshot.size;
+                document.getElementById('totalStudents').textContent = studentsSnapshot.size;
+                document.getElementById('totalTeachers').textContent = teachersSnapshot.size;
+                document.getElementById('totalInvitations').textContent = invitationsSnapshot.size;
+
+            } catch (error) {
+                console.error('Erreur stats admin:', error);
+            }
+        }
+
+        async function loadUsersList() {
+            const usersList = document.getElementById('usersList');
+            
+            try {
+                const snapshot = await db.collection('users')
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                if (snapshot.empty) {
+                    usersList.innerHTML = '<p>Aucun utilisateur trouvé</p>';
+                    return;
+                }
+
+                usersList.innerHTML = '';
+
+                for (const doc of snapshot.docs) {
+                    const user = { id: doc.id, ...doc.data() };
+                    
+                    let userDetails = '';
+                    if (user.type === 'student') {
+                        const studentSnapshot = await db.collection('students')
+                            .where('userId', '==', user.id)
+                            .get();
+                        if (!studentSnapshot.empty) {
+                            const student = studentSnapshot.docs[0].data();
+                            userDetails = `Niveau: ${student.level}, Classe: ${student.class}`;
+                        }
+                    } else if (user.type === 'teacher') {
+                        const teacherSnapshot = await db.collection('teachers')
+                            .where('userId', '==', user.id)
+                            .get();
+                        if (!teacherSnapshot.empty) {
+                            const teacher = teacherSnapshot.docs[0].data();
+                            userDetails = `Matières: ${teacher.subjects.join(', ')}`;
+                        }
+                    }
+
+                    const userItem = document.createElement('div');
+                    userItem.className = `user-item ${user.banned ? 'banned' : ''}`;
+                    userItem.innerHTML = `
+                        <div>
+                            <div style="font-weight: 600;">${user.name}</div>
+                            <div style="color: #6c757d; font-size: 0.9rem;">
+                                ${user.phone} • ${user.type} ${user.banned ? '• 🚫 BANNI' : ''}
+                            </div>
+                            <div style="color: #6c757d; font-size: 0.8rem;">${userDetails}</div>
+                        </div>
+                        <div class="user-actions">
+                            ${!user.banned ? `
+                                <button class="btn btn-danger btn-sm" onclick="banUser('${user.id}')">
+                                    <i class="fas fa-ban"></i> Bannir
+                                </button>
+                            ` : `
+                                <button class="btn btn-success btn-sm" onclick="unbanUser('${user.id}')">
+                                    <i class="fas fa-check"></i> Débannir
+                                </button>
+                            `}
+                            ${user.type === 'teacher' ? `
+                                <button class="btn btn-warning btn-sm" onclick="toggleTeacherVerification('${user.id}')">
+                                    <i class="fas fa-certificate"></i> Vérifier
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                    usersList.appendChild(userItem);
+                }
+
+            } catch (error) {
+                console.error('Erreur chargement utilisateurs:', error);
+                usersList.innerHTML = '<p>Erreur lors du chargement des utilisateurs</p>';
+            }
+        }
+
+        async function loadAdminComments() {
+            const adminCommentsList = document.getElementById('adminCommentsList');
+            
+            try {
+                const snapshot = await db.collection('comments')
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                if (snapshot.empty) {
+                    adminCommentsList.innerHTML = '<p>Aucun commentaire</p>';
+                    return;
+                }
+
+                adminCommentsList.innerHTML = '';
+
+                snapshot.forEach(doc => {
+                    const comment = { id: doc.id, ...doc.data() };
+                    
+                    const commentItem = document.createElement('div');
+                    commentItem.className = 'comment-item';
+                    commentItem.innerHTML = `
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600;">${comment.author}</div>
+                            <div style="color: #6c757d; font-size: 0.9rem;">
+                                ${comment.createdAt.toDate().toLocaleDateString('fr-FR')}
+                                ${!comment.approved ? '• ⚠️ En attente' : ''}
+                            </div>
+                            <div>${comment.text}</div>
+                        </div>
+                        <div class="comment-actions">
+                            ${!comment.approved ? `
+                                <button class="btn btn-success btn-sm" onclick="approveComment('${comment.id}')">
+                                    <i class="fas fa-check"></i> Approuver
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-danger btn-sm" onclick="deleteComment('${comment.id}')">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
+                        </div>
+                    `;
+                    adminCommentsList.appendChild(commentItem);
+                });
+
+            } catch (error) {
+                console.error('Erreur chargement commentaires admin:', error);
+                adminCommentsList.innerHTML = '<p>Erreur lors du chargement des commentaires</p>';
+            }
+        }
+
+        // ===== ACTIONS ADMIN =====
+        async function banUser(userId) {
+            if (!confirm('Êtes-vous sûr de vouloir bannir cet utilisateur ?')) return;
+            
+            try {
+                await db.collection('users').doc(userId).update({
+                    banned: true,
+                    updatedAt: new Date()
+                });
+                await loadUsersList();
+                showAlert('formAlert', 'Utilisateur banni avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur bannissement:', error);
+                showAlert('formAlert', 'Erreur lors du bannissement', 'danger');
+            }
+        }
+
+        async function unbanUser(userId) {
+            try {
+                await db.collection('users').doc(userId).update({
+                    banned: false,
+                    updatedAt: new Date()
+                });
+                await loadUsersList();
+                showAlert('formAlert', 'Utilisateur débanni avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur débannissement:', error);
+                showAlert('formAlert', 'Erreur lors du débannissement', 'danger');
+            }
+        }
+
+        async function toggleTeacherVerification(userId) {
+            try {
+                const teacherSnapshot = await db.collection('teachers')
+                    .where('userId', '==', userId)
+                    .get();
+
+                if (!teacherSnapshot.empty) {
+                    const teacherDoc = teacherSnapshot.docs[0];
+                    const currentStatus = teacherDoc.data().verified;
+                    
+                    await db.collection('teachers').doc(teacherDoc.id).update({
+                        verified: !currentStatus
+                    });
+                    
+                    await loadUsersList();
+                    showAlert('formAlert', `Professeur ${!currentStatus ? 'vérifié' : 'dévérifié'} avec succès`, 'success');
+                }
+            } catch (error) {
+                console.error('Erreur vérification professeur:', error);
+                showAlert('formAlert', 'Erreur lors de la vérification', 'danger');
+            }
+        }
+
+        async function approveComment(commentId) {
+            try {
+                await db.collection('comments').doc(commentId).update({
+                    approved: true
+                });
+                await loadAdminComments();
+                await loadComments();
+                showAlert('formAlert', 'Commentaire approuvé avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur approbation commentaire:', error);
+                showAlert('formAlert', 'Erreur lors de l\'approbation', 'danger');
+            }
+        }
+
+        async function deleteComment(commentId) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce commentaire ?')) return;
+            
+            try {
+                await db.collection('comments').doc(commentId).delete();
+                await loadAdminComments();
+                await loadComments();
+                showAlert('formAlert', 'Commentaire supprimé avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur suppression commentaire:', error);
+                showAlert('formAlert', 'Erreur lors de la suppression', 'danger');
+            }
+        }
+
+        async function savePlatformSettings() {
+            try {
+                // Ici tu pourrais sauvegarder dans une collection 'settings'
+                const primaryPrice = document.getElementById('primaryPrice').value;
+                const secondaryPrice = document.getElementById('secondaryPrice').value;
+                const commissionRate = document.getElementById('commissionRate').value;
+
+                // Mettre à jour l'affichage des prix dans les formulaires
+                document.querySelector('#studentForm option[value="primaire"]').textContent = `Primaire (${primaryPrice}$/séance)`;
+                document.querySelector('#studentForm option[value="secondaire"]').textContent = `Secondaire (${secondaryPrice}$/séance)`;
+
+                showAlert('formAlert', 'Paramètres sauvegardés avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur sauvegarde paramètres:', error);
+                showAlert('formAlert', 'Erreur lors de la sauvegarde des paramètres', 'danger');
+            }
+        }
+
+        // ===== ADMIN INITIALIZATION =====
+        async function createDefaultAdmin() {
+            try {
+                const snapshot = await db.collection('users')
+                    .where('type', '==', 'admin')
+                    .get();
+
+                if (snapshot.empty) {
+                    await db.collection('users').add({
+                        name: "Admin CoverBrain",
+                        phone: "+243000000000",
+                        password: "admin123",
+                        type: "admin",
+                        banned: false,
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                    });
+                    console.log("✅ Admin créé avec succès!");
+                }
+            } catch (error) {
+                console.error("Erreur création admin:", error);
+            }
+        }
+
+        // ===== UTILITAIRES =====
+        function checkLoginStatus() {
+            if (isLoggedIn && currentUser) {
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userNavItem').classList.remove('hidden');
+                document.getElementById('logoutNavItem').classList.remove('hidden');
+                document.getElementById('loginNavItem').classList.add('hidden');
+
+                // Mettre à jour le badge du panier
+                if (currentUser.type === 'student') {
+                    updateCartBadge();
+                }
+            } else {
+                document.getElementById('userNavItem').classList.add('hidden');
+                document.getElementById('logoutNavItem').classList.add('hidden');
+                document.getElementById('loginNavItem').classList.remove('hidden');
+                document.getElementById('cartBadge').classList.add('hidden');
+            }
+        }
+
+        async function updateCartBadge() {
+            if (!currentUser || currentUser.type !== 'student') return;
+
+            try {
+                const snapshot = await db.collection('invitations')
+                    .where('studentId', '==', currentUser.id)
+                    .get();
+
+                const cartBadge = document.getElementById('cartBadge');
+                if (!snapshot.empty) {
+                    cartBadge.textContent = snapshot.size;
+                    cartBadge.classList.remove('hidden');
+                } else {
+                    cartBadge.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Erreur mise à jour badge:', error);
+            }
+        }
+
+        function showAlert(containerId, message, type) {
+            const alertContainer = document.getElementById(containerId);
+            alertContainer.textContent = message;
+            alertContainer.className = `alert alert-${type}`;
+            alertContainer.classList.remove('hidden');
+            setTimeout(() => {
+                alertContainer.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Exposer les fonctions globales
         window.saveProfile = saveProfile;
         window.showTab = showTab;
         window.banUser = banUser;
@@ -1782,9 +2413,6 @@
         window.approveComment = approveComment;
         window.deleteComment = deleteComment;
         window.savePlatformSettings = savePlatformSettings;
-        window.openRatingModal = openRatingModal;
-
-        // Les autres fonctions existantes restent inchangées...
     </script>
 </body>
 </html>
