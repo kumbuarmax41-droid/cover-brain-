@@ -89,6 +89,7 @@
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .nav-tab {
@@ -100,6 +101,9 @@
             border: none;
             color: white;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .nav-tab:hover {
@@ -361,6 +365,27 @@
             justify-content: center;
         }
 
+        .availability-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+
+        .available {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .unavailable {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
         /* ===== ADMIN PANEL ===== */
         .admin-stats {
             display: grid;
@@ -454,39 +479,6 @@
             position: relative;
             transition: all 0.3s;
             border: 2px solid transparent;
-        }
-
-        .cart-item.pending {
-            border-left-color: var(--warning);
-        }
-
-        .cart-item.accepted {
-            border-left-color: var(--success);
-        }
-
-        .cart-item.rejected {
-            border-left-color: var(--danger);
-        }
-
-        .status-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            position: absolute;
-            top: 15px;
-            right: 15px;
-        }
-
-        .status-dot.pending {
-            background-color: var(--warning);
-        }
-
-        .status-dot.accepted {
-            background-color: var(--success);
-        }
-
-        .status-dot.rejected {
-            background-color: var(--danger);
         }
 
         .contact-info {
@@ -794,19 +786,41 @@
                 </div>
                 
                 <div class="main-nav">
-                    <button class="nav-tab active" data-tab="accueil">Accueil</button>
-                    <button class="nav-tab" data-tab="recherche" id="navSearchTab">Recherche</button>
-                    <button class="nav-tab" data-tab="panier" id="navCartTab">Panier <span id="cartBadge" class="notification-badge hidden">0</span></button>
-                    <button class="nav-tab" data-tab="profil" id="navProfileTab">Profil</button>
+                    <button class="nav-tab active" onclick="showTab('accueil')">
+                        <i class="fas fa-home"></i> Accueil
+                    </button>
+                    <button class="nav-tab" onclick="showTab('recherche')" id="navSearchTab">
+                        <i class="fas fa-search"></i> Recherche
+                    </button>
+                    <button class="nav-tab" onclick="showTab('panier')" id="navCartTab">
+                        <i class="fas fa-shopping-cart"></i> Panier <span id="cartBadge" class="notification-badge hidden">0</span>
+                    </button>
+                    <button class="nav-tab" onclick="showTab('profil')" id="navProfileTab">
+                        <i class="fas fa-user"></i> Profil
+                    </button>
+                    
+                    <!-- Onglet Admin (visible uniquement pour les administrateurs) -->
+                    <button class="nav-tab hidden" onclick="showTab('adminSection')" id="adminNavTab">
+                        <i class="fas fa-cog"></i> Admin
+                    </button>
                     
                     <div class="more-dropdown">
-                        <button class="nav-tab" id="moreTab">
-                            Plus <i class="fas fa-chevron-down"></i>
+                        <button class="nav-tab" onclick="toggleMoreMenu(event)">
+                            <i class="fas fa-ellipsis-h"></i> Plus
                         </button>
                         <div class="more-menu" id="moreMenu">
-                            <a href="#commentaires">Commentaires</a>
-                            <a href="#inscription">S'inscrire</a>
-                            <a href="#about">À propos</a>
+                            <a href="javascript:void(0)" onclick="showTab('commentaires')">
+                                <i class="fas fa-comments"></i> Commentaires
+                            </a>
+                            <a href="javascript:void(0)" onclick="showTab('inscription')">
+                                <i class="fas fa-user-plus"></i> S'inscrire
+                            </a>
+                            <a href="javascript:void(0)" onclick="showTab('about')">
+                                <i class="fas fa-info-circle"></i> À propos
+                            </a>
+                            <a href="javascript:void(0)" onclick="showAdminIfAllowed()" id="adminMenuLink" class="hidden">
+                                <i class="fas fa-cog"></i> Administration
+                            </a>
                         </div>
                     </div>
                     
@@ -817,8 +831,12 @@
                         </div>
                     </div>
                     
-                    <button class="nav-tab" id="loginNavItem">Connexion</button>
-                    <button class="nav-tab hidden" id="logoutNavItem">Déconnexion</button>
+                    <button class="nav-tab" id="loginNavItem" onclick="openLoginModal()">
+                        <i class="fas fa-sign-in-alt"></i> Connexion
+                    </button>
+                    <button class="nav-tab hidden" onclick="logoutUser()" id="logoutNavItem">
+                        <i class="fas fa-sign-out-alt"></i> Déconnexion
+                    </button>
                 </div>
             </div>
         </div>
@@ -832,7 +850,9 @@
                 <h1>Trouvez le répétiteur idéal pour réussir</h1>
                 <p>Cover Brain connecte les élèves avec des répétiteurs qualifiés pour un soutien scolaire personnalisé à domicile.</p>
                 <p><strong>Une innovation Xtronics</strong></p>
-                <a href="#inscription" class="btn">Commencer maintenant</a>
+                <a href="javascript:void(0)" class="btn" onclick="showTab('inscription')">
+                    <i class="fas fa-rocket"></i> Commencer maintenant
+                </a>
             </div>
         </section>
 
@@ -840,7 +860,7 @@
         <section class="search-section hidden" id="recherche">
             <div class="container">
                 <h2 class="section-title">Trouvez un répétiteur</h2>
-                <form class="search-form" id="searchForm">
+                <form class="search-form" onsubmit="event.preventDefault(); searchTeachers(document.getElementById('searchInput').value.trim());">
                     <input type="text" class="search-input" id="searchInput" placeholder="Rechercher un cours (ex: Mathématiques, Physique, Anglais...)">
                     <button type="submit" class="search-btn"><i class="fas fa-search"></i> Rechercher</button>
                 </form>
@@ -893,8 +913,8 @@
                         <div class="stat-label">Professeurs</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="totalInvitations">0</div>
-                        <div class="stat-label">Invitations</div>
+                        <div class="stat-number" id="totalRatings">0</div>
+                        <div class="stat-label">Avis</div>
                     </div>
                 </div>
 
@@ -937,24 +957,24 @@
         </section>
 
         <!-- ===== REGISTRATION SECTION ===== -->
-        <section class="section" id="inscription">
+        <section class="section hidden" id="inscription">
             <div class="container">
                 <h2 class="section-title">Rejoindre Cover Brain</h2>
                 <div class="form-container">
                     <div id="formAlert" class="alert hidden"></div>
                     <div class="user-type">
                         <label>
-                            <input type="radio" name="userType" value="student" checked>
+                            <input type="radio" name="userType" value="student" checked onchange="toggleUserType()">
                             <span><i class="fas fa-user-graduate"></i> Élève</span>
                         </label>
                         <label>
-                            <input type="radio" name="userType" value="teacher">
+                            <input type="radio" name="userType" value="teacher" onchange="toggleUserType()">
                             <span><i class="fas fa-chalkboard-teacher"></i> Professeur</span>
                         </label>
                     </div>
 
                     <!-- Student Form -->
-                    <form id="studentForm">
+                    <form id="studentForm" onsubmit="event.preventDefault(); registerStudent();">
                         <div class="form-group">
                             <label for="studentName">Nom complet</label>
                             <input type="text" id="studentName" class="form-control" required>
@@ -991,11 +1011,13 @@
                             <label for="studentPassword">Mot de passe</label>
                             <input type="password" id="studentPassword" class="form-control" minlength="6" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">S'inscrire</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> S'inscrire
+                        </button>
                     </form>
 
                     <!-- Teacher Form -->
-                    <form id="teacherForm" class="hidden">
+                    <form id="teacherForm" class="hidden" onsubmit="event.preventDefault(); registerTeacher();">
                         <div class="payment-info">
                             <h4><i class="fas fa-info-circle"></i> Conditions des Professeurs</h4>
                             <p><strong>Commission :</strong> 10% des revenus mensuels</p>
@@ -1027,21 +1049,19 @@
                             <input type="text" id="teacherAddress" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label for="maxStudents">Nombre max d'élèves</label>
-                            <input type="number" id="maxStudents" class="form-control" min="1" max="20" required>
-                        </div>
-                        <div class="form-group">
                             <label for="teacherPassword">Mot de passe</label>
                             <input type="password" id="teacherPassword" class="form-control" minlength="6" required>
                         </div>
-                        <button type="submit" class="btn btn-primary">S'inscrire</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> S'inscrire
+                        </button>
                     </form>
                 </div>
             </div>
         </section>
 
         <!-- ===== COMMENTS SECTION ===== -->
-        <section class="section" id="commentaires">
+        <section class="section hidden" id="commentaires">
             <div class="container">
                 <h2 class="section-title">Espace Commentaires</h2>
                 <div class="comments-section">
@@ -1050,7 +1070,7 @@
                     </div>
                     <div class="comment-form">
                         <h3>Laisser un commentaire</h3>
-                        <form id="commentForm">
+                        <form onsubmit="event.preventDefault(); addComment();">
                             <div class="form-group">
                                 <label for="commentAuthor">Votre nom</label>
                                 <input type="text" id="commentAuthor" class="form-control" required>
@@ -1069,7 +1089,7 @@
         </section>
 
         <!-- ===== ABOUT SECTION ===== -->
-        <section class="section" id="about">
+        <section class="section hidden" id="about">
             <div class="container">
                 <div class="about-section">
                     <h3>À Propos de Cover Brain</h3>
@@ -1098,7 +1118,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Connexion</h2>
-                <button class="close-btn" id="closeLoginModal">&times;</button>
+                <button class="close-btn" onclick="closeLoginModal()">&times;</button>
             </div>
             <div id="loginAlert" class="alert hidden"></div>
             <div class="form-group">
@@ -1109,7 +1129,9 @@
                 <label for="loginPassword">Mot de passe</label>
                 <input type="password" id="loginPassword" class="form-control" required>
             </div>
-            <button class="btn btn-primary" id="loginBtn">Se connecter</button>
+            <button class="btn btn-primary" onclick="loginUser()">
+                <i class="fas fa-sign-in-alt"></i> Se connecter
+            </button>
         </div>
     </div>
 
@@ -1146,7 +1168,6 @@
 
         async function initializeApp() {
             setupEventListeners();
-            setupNavigation();
             checkLoginStatus();
             await createDefaultAdmin();
             await loadComments();
@@ -1154,97 +1175,24 @@
         }
 
         function setupEventListeners() {
-            // Navigation
-            document.getElementById('moreTab').addEventListener('click', function(e) {
-                e.stopPropagation();
-                document.getElementById('moreMenu').classList.toggle('show');
-            });
-
-            document.addEventListener('click', function() {
-                document.getElementById('moreMenu').classList.remove('show');
-            });
-
-            // Inscriptions
-            document.querySelectorAll('input[name="userType"]').forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const isStudent = this.value === 'student';
-                    document.getElementById('studentForm').classList.toggle('hidden', !isStudent);
-                    document.getElementById('teacherForm').classList.toggle('hidden', isStudent);
-                });
-            });
-
-            document.getElementById('studentForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                registerStudent();
-            });
-
-            document.getElementById('teacherForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                registerTeacher();
-            });
-
-            // Commentaires
-            document.getElementById('commentForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                addComment();
-            });
-
-            // Recherche
-            document.getElementById('searchForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                const searchTerm = document.getElementById('searchInput').value.trim();
-                
-                if (!searchTerm) {
-                    showAlert('formAlert', 'Veuillez entrer un terme de recherche', 'danger');
-                    return;
+            // Fermeture du menu déroulant en cliquant ailleurs
+            document.addEventListener('click', function(event) {
+                if (!event.target.closest('.more-dropdown')) {
+                    document.getElementById('moreMenu').classList.remove('show');
                 }
-
-                if (searchTerm.toUpperCase() === 'DENVER' && currentUser?.type === 'admin') {
-                    showAdminPanel();
-                    return;
-                }
-                
-                searchTeachers(searchTerm);
-            });
-
-            // Authentification
-            document.getElementById('loginNavItem').addEventListener('click', function(e) {
-                e.preventDefault();
-                document.getElementById('loginModal').style.display = 'flex';
-            });
-
-            document.getElementById('loginBtn').addEventListener('click', loginUser);
-            document.getElementById('logoutNavItem').addEventListener('click', logoutUser);
-
-            // Fermeture modals
-            document.getElementById('closeLoginModal').addEventListener('click', function() {
-                document.getElementById('loginModal').style.display = 'none';
             });
         }
 
-        function setupNavigation() {
-            // Gestion des onglets
-            document.querySelectorAll('.nav-tab[data-tab]').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    const tabId = this.getAttribute('data-tab');
-                    showTab(tabId);
-                });
-            });
-
-            // Navigation "Plus"
-            document.querySelectorAll('.more-menu a').forEach(link => {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const targetId = this.getAttribute('href').substring(1);
-                    showTab(targetId);
-                    document.getElementById('moreMenu').classList.remove('show');
-                });
-            });
+        // ===== NAVIGATION =====
+        function toggleMoreMenu(event) {
+            event.stopPropagation();
+            const menu = document.getElementById('moreMenu');
+            menu.classList.toggle('show');
         }
 
         function showTab(tabId) {
             // Masquer toutes les sections
-            document.querySelectorAll('section').forEach(section => {
+            document.querySelectorAll('main > section').forEach(section => {
                 section.classList.add('hidden');
             });
 
@@ -1254,7 +1202,7 @@
             });
 
             // Activer l'onglet correspondant
-            const activeTab = document.querySelector(`[data-tab="${tabId}"]`);
+            const activeTab = document.querySelector(`[onclick="showTab('${tabId}')"]`);
             if (activeTab) {
                 activeTab.classList.add('active');
             }
@@ -1276,9 +1224,18 @@
             } else if (tabId === 'adminSection') {
                 loadAdminPanel();
             }
+            
+            // Fermer le menu déroulant
+            document.getElementById('moreMenu').classList.remove('show');
         }
 
         // ===== INSCRIPTIONS =====
+        function toggleUserType() {
+            const isStudent = document.querySelector('input[name="userType"]:checked').value === 'student';
+            document.getElementById('studentForm').classList.toggle('hidden', !isStudent);
+            document.getElementById('teacherForm').classList.toggle('hidden', isStudent);
+        }
+
         async function registerStudent() {
             const studentData = {
                 name: document.getElementById('studentName').value,
@@ -1303,7 +1260,7 @@
                     return;
                 }
 
-                // Créer l'étudiant dans Firebase
+                // Créer l'utilisateur dans Firebase
                 await db.collection('students').add(studentData);
 
                 showAlert('formAlert', 'Inscription réussie! Vous pouvez maintenant vous connecter.', 'success');
@@ -1323,9 +1280,10 @@
                 classLevels: document.getElementById('teacherClass').value.split(',').map(s => s.trim()),
                 school: document.getElementById('teacherSchool').value,
                 address: document.getElementById('teacherAddress').value,
-                maxStudents: parseInt(document.getElementById('maxStudents').value),
-                currentStudents: 0,
                 password: document.getElementById('teacherPassword').value,
+                available: true,
+                rating: 0,
+                totalRatings: 0,
                 verified: true,
                 createdAt: new Date()
             };
@@ -1372,7 +1330,8 @@
                 });
 
                 await loadComments();
-                document.getElementById('commentForm').reset();
+                document.getElementById('commentAuthor').value = '';
+                document.getElementById('commentText').value = '';
                 showAlert('formAlert', 'Commentaire publié avec succès!', 'success');
             } catch (error) {
                 console.error('Erreur ajout commentaire:', error);
@@ -1421,15 +1380,23 @@
                 console.error('Erreur chargement commentaires:', error);
                 commentsContainer.innerHTML = `
                     <div style="text-align: center; padding: 2rem;">
-                        <i class="fas fa-exclamation-triangle fa-3x" style="color: #dc3545; margin-bottom: 1rem;"></i>
-                        <h3 style="color: #dc3545;">Erreur de chargement</h3>
-                        <p>Impossible de charger les commentaires. Veuillez réessayer.</p>
+                        <i class="fas fa-comments fa-3x" style="color: #6c757d; margin-bottom: 1rem;"></i>
+                        <h3 style="color: #6c757d;">Merci d'envoyer vos avis</h3>
+                        <p>Vos retours sont importants pour nous améliorer!</p>
                     </div>
                 `;
             }
         }
 
         // ===== AUTHENTIFICATION =====
+        function openLoginModal() {
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+
         async function loginUser() {
             const phone = document.getElementById('loginPhone').value;
             const password = document.getElementById('loginPassword').value;
@@ -1442,6 +1409,7 @@
                     .get();
 
                 let userType = 'student';
+                let userDoc = null;
 
                 if (snapshot.empty) {
                     snapshot = await db.collection('teachers')
@@ -1452,7 +1420,7 @@
                 }
 
                 if (snapshot.empty) {
-                    // Rechercher comme admin
+                    // Rechercher dans admin
                     snapshot = await db.collection('admin')
                         .where('phone', '==', phone)
                         .where('password', '==', password)
@@ -1465,14 +1433,13 @@
                     return;
                 }
 
-                const userDoc = snapshot.docs[0];
+                userDoc = snapshot.docs[0];
                 const userData = userDoc.data();
 
-                // SUPPRIMÉ: Vérification banned car le champ n'existe pas
-                // if (userData.banned) {
-                //     showAlert('loginAlert', 'Votre compte a été suspendu', 'danger');
-                //     return;
-                // }
+                if (userData.banned) {
+                    showAlert('loginAlert', 'Votre compte a été suspendu', 'danger');
+                    return;
+                }
 
                 // Connexion réussie
                 currentUser = {
@@ -1484,7 +1451,7 @@
                 isLoggedIn = true;
                 localStorage.setItem('coverBrainCurrentUser', JSON.stringify(currentUser));
                 
-                document.getElementById('loginModal').style.display = 'none';
+                closeLoginModal();
                 checkLoginStatus();
                 showAlert('formAlert', 'Connexion réussie!', 'success');
                 
@@ -1513,12 +1480,22 @@
         async function searchTeachers(searchTerm) {
             if (!isLoggedIn) {
                 showAlert('formAlert', 'Connectez-vous pour rechercher des professeurs', 'danger');
-                document.getElementById('loginModal').style.display = 'flex';
+                openLoginModal();
                 return;
             }
 
             if (currentUser.type !== 'student') {
                 showAlert('formAlert', 'Seuls les élèves peuvent rechercher des professeurs', 'warning');
+                return;
+            }
+
+            if (!searchTerm) {
+                showAlert('formAlert', 'Veuillez entrer un terme de recherche', 'danger');
+                return;
+            }
+
+            if (searchTerm.toUpperCase() === 'DENVER' && currentUser?.type === 'admin') {
+                showAdminPanel();
                 return;
             }
 
@@ -1528,17 +1505,19 @@
                 
                 snapshot.forEach(doc => {
                     const teacher = { id: doc.id, ...doc.data() };
-                    // MODIFIÉ: Supprimer vérification banned et verified
-                    const searchLower = searchTerm.toLowerCase();
-                    const matches = teacher.subjects.some(s => 
-                        s.toLowerCase().includes(searchLower)
-                    ) || teacher.name.toLowerCase().includes(searchLower) ||
-                    teacher.classLevels.some(level => 
-                        level.toLowerCase().includes(searchLower)
-                    );
-                    
-                    if (matches) {
-                        teachers.push(teacher);
+                    // Vérifier si le professeur n'est pas banni et est disponible
+                    if (!teacher.banned && teacher.verified && teacher.available) {
+                        const searchLower = searchTerm.toLowerCase();
+                        const matches = teacher.subjects.some(s => 
+                            s.toLowerCase().includes(searchLower)
+                        ) || teacher.name.toLowerCase().includes(searchLower) ||
+                        teacher.classLevels.some(level => 
+                            level.toLowerCase().includes(searchLower)
+                        );
+                        
+                        if (matches) {
+                            teachers.push(teacher);
+                        }
                     }
                 });
 
@@ -1570,14 +1549,24 @@
             }
 
             teachers.forEach(teacher => {
-                const availableSlots = teacher.maxStudents - teacher.currentStudents;
                 const price = currentUser?.level === 'primaire' ? 5 : 7;
-                const message = `Bonjour ${teacher.name}%2C%20je%20suis%20intéressé(e)%20par%20vos%20services%20de%20répétition%20sur%20Cover%20Brain.`;
+                const whatsappMessage = `Bonjour ${teacher.name}%2C%20je%20suis%20intéressé(e)%20par%20vos%20services%20de%20répétition%20sur%20Cover%20Brain.`;
+                const ratingStars = generateRatingStars(teacher.rating);
 
                 const teacherCard = document.createElement('div');
                 teacherCard.className = 'teacher-card';
                 teacherCard.innerHTML = `
-                    <h3>${teacher.name}</h3>
+                    <h3>${teacher.name} 
+                        <span class="availability-status ${teacher.available ? 'available' : 'unavailable'}">
+                            <i class="fas ${teacher.available ? 'fa-check' : 'fa-pause'}"></i>
+                            ${teacher.available ? 'Disponible' : 'Indisponible'}
+                        </span>
+                    </h3>
+                    <div class="rating">
+                        ${ratingStars}
+                        <span class="rating-value">${teacher.rating.toFixed(1)}</span>
+                        <span style="color: #6c757d; margin-left: 8px;">(${teacher.totalRatings} avis)</span>
+                    </div>
                     <div class="teacher-info">
                         <div class="info-item">
                             <i class="fas fa-book"></i>
@@ -1595,81 +1584,85 @@
                             <i class="fas fa-map-marker-alt"></i>
                             <span><strong>Zone:</strong> ${teacher.address}</span>
                         </div>
-                        <div class="info-item">
-                            <i class="fas fa-users"></i>
-                            <span><strong>Places:</strong> ${availableSlots} disponible(s)</span>
-                        </div>
                     </div>
                     <div class="price-tag">${price}$/séance</div>
                     <div class="teacher-actions">
-                        <button class="btn btn-success invite-teacher" data-teacher-id="${teacher.id}">
-                            <i class="fas fa-user-plus"></i> Inviter
-                        </button>
-                        <a href="https://wa.me/${teacher.phone}?text=${message}" class="btn btn-whatsapp" target="_blank">
-                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        <a href="https://wa.me/${teacher.phone}?text=${whatsappMessage}" class="btn btn-whatsapp" target="_blank">
+                            <i class="fab fa-whatsapp"></i> Contacter
                         </a>
+                        <button class="btn btn-primary" onclick="rateTeacher('${teacher.id}')">
+                            <i class="fas fa-star"></i> Noter
+                        </button>
                     </div>
                 `;
 
                 resultsContainer.appendChild(teacherCard);
             });
 
-            document.querySelectorAll('.invite-teacher').forEach(button => {
-                button.addEventListener('click', function() {
-                    const teacherId = this.getAttribute('data-teacher-id');
-                    inviteTeacher(teacherId);
-                });
-            });
-
             document.getElementById('resultsSection').classList.remove('hidden');
         }
 
-        // ===== INVITATIONS =====
-        async function inviteTeacher(teacherId) {
+        function generateRatingStars(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+            
+            let stars = '';
+            
+            // Étoiles pleines
+            for (let i = 0; i < fullStars; i++) {
+                stars += '<i class="fas fa-star star filled"></i>';
+            }
+            
+            // Demi-étoile
+            if (hasHalfStar) {
+                stars += '<i class="fas fa-star-half-alt star filled"></i>';
+            }
+            
+            // Étoiles vides
+            for (let i = 0; i < emptyStars; i++) {
+                stars += '<i class="far fa-star star"></i>';
+            }
+            
+            return stars;
+        }
+
+        async function rateTeacher(teacherId) {
             if (!currentUser) return;
 
+            const rating = prompt("Donnez une note de 1 à 5 étoiles à ce professeur:");
+            if (!rating || isNaN(rating) || rating < 1 || rating > 5) {
+                showAlert('formAlert', 'Veuillez entrer une note valide entre 1 et 5', 'warning');
+                return;
+            }
+
+            const numericRating = parseFloat(rating);
+
             try {
-                // Vérifier si une invitation existe déjà
-                const existingInvitations = await db.collection('invitations')
-                    .where('studentId', '==', currentUser.id)
-                    .where('teacherId', '==', teacherId)
-                    .get();
-
-                if (!existingInvitations.empty) {
-                    showAlert('formAlert', 'Vous avez déjà envoyé une invitation à ce professeur', 'warning');
-                    return;
-                }
-
-                // Récupérer les infos du professeur
+                // Récupérer les données actuelles du professeur
                 const teacherDoc = await db.collection('teachers').doc(teacherId).get();
                 const teacher = teacherDoc.data();
 
-                // MODIFIÉ: Récupérer l'étudiant directement par ID
-                const studentDoc = await db.collection('students').doc(currentUser.id).get();
-                if (!studentDoc.exists) {
-                    showAlert('formAlert', 'Profil étudiant non trouvé', 'danger');
-                    return;
-                }
-                const student = studentDoc.data();
+                // Calculer la nouvelle moyenne
+                const totalRatings = teacher.totalRatings + 1;
+                const newRating = ((teacher.rating * teacher.totalRatings) + numericRating) / totalRatings;
 
-                // Créer l'invitation
-                await db.collection('invitations').add({
-                    studentId: currentUser.id,
+                // Mettre à jour la note du professeur
+                await db.collection('teachers').doc(teacherId).update({
+                    rating: newRating,
+                    totalRatings: totalRatings
+                });
+
+                // Enregistrer l'avis
+                await db.collection('ratings').add({
                     teacherId: teacherId,
+                    studentId: currentUser.id,
                     studentName: currentUser.name,
-                    teacherName: teacher.name,
-                    studentPhone: currentUser.phone,
-                    teacherPhone: teacher.phone,
-                    studentAddress: currentUser.address,
-                    teacherAddress: teacher.address,
-                    subjects: teacher.subjects,
-                    level: student.level,
-                    price: student.level === 'primaire' ? 5 : 7,
-                    status: 'pending',
+                    rating: numericRating,
                     createdAt: new Date()
                 });
 
-                showAlert('formAlert', 'Invitation envoyée! Le professeur verra vos informations.', 'success');
+                showAlert('formAlert', 'Merci pour votre avis!', 'success');
 
                 // Recharger les résultats
                 const searchInput = document.getElementById('searchInput');
@@ -1678,8 +1671,8 @@
                 }
 
             } catch (error) {
-                console.error('Erreur envoi invitation:', error);
-                showAlert('formAlert', 'Erreur lors de l\'envoi de l\'invitation', 'danger');
+                console.error('Erreur notation:', error);
+                showAlert('formAlert', 'Erreur lors de l\'envoi de votre avis', 'danger');
             }
         }
 
@@ -1689,15 +1682,37 @@
             const cartTitle = document.getElementById('cartTitle');
             cartContainer.innerHTML = '';
 
-            if (!currentUser) return;
+            if (!currentUser) {
+                cartContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <i class="fas fa-shopping-cart fa-3x" style="color: #6c757d; margin-bottom: 1rem;"></i>
+                        <h3 style="color: #6c757d;">Connectez-vous pour accéder à votre espace</h3>
+                        <button class="btn btn-primary" onclick="openLoginModal()">
+                            <i class="fas fa-sign-in-alt"></i> Se connecter
+                        </button>
+                    </div>
+                `;
+                return;
+            }
 
             try {
                 if (currentUser.type === 'student') {
-                    cartTitle.textContent = 'Mes Professeurs Invités';
+                    cartTitle.textContent = 'Mes Professeurs Notés';
                     await displayStudentCart();
                 } else if (currentUser.type === 'teacher') {
-                    cartTitle.textContent = 'Mes Demandes d\'Élèves';
+                    cartTitle.textContent = 'Mon Espace Professeur';
                     await displayTeacherCart();
+                } else if (currentUser.type === 'admin') {
+                    cartTitle.textContent = 'Espace Administrateur';
+                    cartContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem;">
+                            <i class="fas fa-cog fa-3x" style="color: var(--primary); margin-bottom: 1rem;"></i>
+                            <h3 style="color: var(--primary);">Accédez au panneau d'administration</h3>
+                            <button class="btn btn-primary" onclick="showTab('adminSection')">
+                                <i class="fas fa-cog"></i> Panneau d'administration
+                            </button>
+                        </div>
+                    `;
                 }
             } catch (error) {
                 console.error('Erreur chargement panier:', error);
@@ -1715,17 +1730,20 @@
             const cartContainer = document.getElementById('cartContainer');
             
             try {
-                const snapshot = await db.collection('invitations')
+                const ratingsSnapshot = await db.collection('ratings')
                     .where('studentId', '==', currentUser.id)
                     .orderBy('createdAt', 'desc')
                     .get();
 
-                if (snapshot.empty) {
+                if (ratingsSnapshot.empty) {
                     cartContainer.innerHTML = `
                         <div style="text-align: center; padding: 2rem;">
-                            <i class="fas fa-envelope fa-3x" style="color: #6c757d; margin-bottom: 1rem;"></i>
-                            <h3 style="color: #6c757d;">Aucune invitation envoyée</h3>
-                            <p>Recherchez des professeurs et envoyez-leur des invitations!</p>
+                            <i class="fas fa-star fa-3x" style="color: #6c757d; margin-bottom: 1rem;"></i>
+                            <h3 style="color: #6c757d;">Aucun professeur noté</h3>
+                            <p>Recherchez des professeurs et donnez-leur vos avis!</p>
+                            <button class="btn btn-primary" onclick="showTab('recherche')">
+                                <i class="fas fa-search"></i> Rechercher des professeurs
+                            </button>
                         </div>
                     `;
                     return;
@@ -1734,34 +1752,33 @@
                 const cartItems = document.createElement('div');
                 cartItems.className = 'cart-items';
 
-                for (const doc of snapshot.docs) {
-                    const invitation = { id: doc.id, ...doc.data() };
+                for (const doc of ratingsSnapshot.docs) {
+                    const rating = { id: doc.id, ...doc.data() };
+                    const teacherDoc = await db.collection('teachers').doc(rating.teacherId).get();
                     
-                    const message = `Bonjour ${invitation.teacherName}%2C%20je%20suis%20intéressé(e)%20par%20vos%20services%20de%20répétition%20sur%20Cover%20Brain.`;
+                    if (teacherDoc.exists) {
+                        const teacher = teacherDoc.data();
+                        const ratingStars = generateRatingStars(rating.rating);
+                        const whatsappMessage = `Bonjour ${teacher.name}%2C%20je%20suis%20intéressé(e)%20par%20vos%20services%20de%20répétition%20sur%20Cover%20Brain.`;
 
-                    const cartItem = document.createElement('div');
-                    cartItem.className = `cart-item ${invitation.status}`;
-                    cartItem.innerHTML = `
-                        <div class="status-dot ${invitation.status}"></div>
-                        <h4>${invitation.teacherName}</h4>
-                        <p><strong>Matières:</strong> ${invitation.subjects.join(', ')}</p>
-                        <p><strong>Prix:</strong> ${invitation.price}$/séance</p>
-                        <div class="status-info">
-                            ${invitation.status === 'pending' ? '⏳ En attente de réponse' : 
-                              invitation.status === 'accepted' ? '✅ Accepté' : '❌ Refusé'}
-                        </div>
-                        ${invitation.status === 'accepted' ? `
-                            <div class="contact-info">
-                                <h5><i class="fas fa-address-book"></i> Contact du Professeur</h5>
-                                <div class="teacher-actions">
-                                    <a href="https://wa.me/${invitation.teacherPhone}?text=${message}" class="btn btn-whatsapp" target="_blank">
-                                        <i class="fab fa-whatsapp"></i> WhatsApp
-                                    </a>
-                                </div>
+                        const cartItem = document.createElement('div');
+                        cartItem.className = 'cart-item';
+                        cartItem.innerHTML = `
+                            <h4>${teacher.name}</h4>
+                            <div class="rating">
+                                ${ratingStars}
+                                <span class="rating-value">Votre note: ${rating.rating}/5</span>
                             </div>
-                        ` : ''}
-                    `;
-                    cartItems.appendChild(cartItem);
+                            <p><strong>Matières:</strong> ${teacher.subjects.join(', ')}</p>
+                            <p><strong>Note moyenne:</strong> ${teacher.rating.toFixed(1)}/5 (${teacher.totalRatings} avis)</p>
+                            <div class="contact-info">
+                                <a href="https://wa.me/${teacher.phone}?text=${whatsappMessage}" class="btn btn-whatsapp" target="_blank">
+                                    <i class="fab fa-whatsapp"></i> Contacter sur WhatsApp
+                                </a>
+                            </div>
+                        `;
+                        cartItems.appendChild(cartItem);
+                    }
                 }
 
                 cartContainer.appendChild(cartItems);
@@ -1772,10 +1789,7 @@
                     <div style="text-align: center; padding: 2rem;">
                         <i class="fas fa-exclamation-circle fa-3x" style="color: #dc3545; margin-bottom: 1rem;"></i>
                         <h3 style="color: #dc3545;">Erreur de chargement</h3>
-                        <p>Impossible de charger vos invitations. Veuillez réessayer.</p>
-                        <button class="btn btn-primary" onclick="showCart()">
-                            <i class="fas fa-redo"></i> Réessayer
-                        </button>
+                        <p>Impossible de charger vos professeurs notés. Veuillez réessayer.</p>
                     </div>
                 `;
             }
@@ -1785,96 +1799,87 @@
             const cartContainer = document.getElementById('cartContainer');
             
             try {
-                const snapshot = await db.collection('invitations')
-                    .where('teacherId', '==', currentUser.id)
-                    .orderBy('createdAt', 'desc')
+                // Récupérer le professeur connecté
+                const teacherSnapshot = await db.collection('teachers')
+                    .where('phone', '==', currentUser.phone)
+                    .where('password', '==', currentUser.password)
                     .get();
 
-                if (snapshot.empty) {
-                    cartContainer.innerHTML = `
-                        <div style="text-align: center; padding: 2rem;">
-                            <i class="fas fa-bell fa-3x" style="color: #6c757d; margin-bottom: 1rem;"></i>
-                            <h3 style="color: #6c757d;">Aucune demande reçue</h3>
-                            <p>Les élèves vous trouveront bientôt!</p>
-                        </div>
-                    `;
+                if (teacherSnapshot.empty) {
+                    cartContainer.innerHTML = '<p>Profil non trouvé</p>';
                     return;
                 }
 
-                const cartItems = document.createElement('div');
-                cartItems.className = 'cart-items';
+                const teacherDoc = teacherSnapshot.docs[0];
+                const teacher = teacherDoc.data();
+                const teacherId = teacherDoc.id;
+                const ratingStars = generateRatingStars(teacher.rating);
 
-                for (const doc of snapshot.docs) {
-                    const invitation = { id: doc.id, ...doc.data() };
-                    
-                    // MODIFIÉ: Récupérer l'étudiant directement par ID
-                    const studentDoc = await db.collection('students').doc(invitation.studentId).get();
-                    if (!studentDoc.exists) {
-                        console.warn(`Student ${invitation.studentId} non trouvé`);
-                        continue;
-                    }
-                    const student = studentDoc.data();
+                // Récupérer les avis récents
+                const ratingsSnapshot = await db.collection('ratings')
+                    .where('teacherId', '==', teacherId)
+                    .orderBy('createdAt', 'desc')
+                    .limit(5)
+                    .get();
 
-                    const cartItem = document.createElement('div');
-                    cartItem.className = `cart-item ${invitation.status}`;
-                    cartItem.innerHTML = `
-                        <div class="status-dot ${invitation.status}"></div>
-                        <h4>${student.name}</h4>
-                        <div class="student-info">
+                cartContainer.innerHTML = `
+                    <div class="cart-section">
+                        <h3>Mon Profil Professeur</h3>
+                        <div class="teacher-info">
+                            <div class="info-item">
+                                <i class="fas fa-user"></i>
+                                <span><strong>Nom:</strong> ${teacher.name}</span>
+                            </div>
                             <div class="info-item">
                                 <i class="fas fa-phone"></i>
-                                <span><strong>Téléphone:</strong> ${student.phone}</span>
+                                <span><strong>Téléphone:</strong> ${teacher.phone}</span>
                             </div>
                             <div class="info-item">
-                                <i class="fas fa-graduation-cap"></i>
-                                <span><strong>Niveau:</strong> ${student.level} - ${student.class}</span>
+                                <i class="fas fa-star"></i>
+                                <span><strong>Note moyenne:</strong> ${teacher.rating.toFixed(1)}/5 (${teacher.totalRatings} avis)</span>
                             </div>
                             <div class="info-item">
-                                <i class="fas fa-school"></i>
-                                <span><strong>École:</strong> ${student.school}</span>
-                            </div>
-                            <div class="info-item">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span><strong>Adresse:</strong> ${student.address}</span>
-                            </div>
-                            <div class="info-item">
-                                <i class="fas fa-birthday-cake"></i>
-                                <span><strong>Âge:</strong> ${student.age} ans</span>
+                                <i class="fas fa-chart-line"></i>
+                                <span><strong>Statut:</strong> ${teacher.available ? '🟢 Visible' : '🔴 Caché'}</span>
                             </div>
                         </div>
-                        <div class="cart-item-actions">
-                            ${invitation.status === 'pending' ? `
-                                <button class="btn btn-success accept-invitation" data-invitation-id="${invitation.id}">
-                                    <i class="fas fa-check"></i> Accepter
-                                </button>
-                                <button class="btn btn-danger reject-invitation" data-invitation-id="${invitation.id}">
-                                    <i class="fas fa-times"></i> Refuser
-                                </button>
-                            ` : `
-                                <button class="btn btn-${invitation.status === 'accepted' ? 'success' : 'danger'}" disabled>
-                                    ${invitation.status === 'accepted' ? '✅ Accepté' : '❌ Refusé'}
-                                </button>
-                            `}
+                        
+                        <div class="teacher-actions" style="margin-top: 2rem;">
+                            <button class="btn ${teacher.available ? 'btn-warning' : 'btn-success'}" onclick="toggleTeacherAvailability('${teacherId}', ${!teacher.available})">
+                                <i class="fas ${teacher.available ? 'fa-eye-slash' : 'fa-eye'}"></i>
+                                ${teacher.available ? 'Se Rendre Indisponible' : 'Devenir Disponible'}
+                            </button>
                         </div>
-                    `;
-                    cartItems.appendChild(cartItem);
-                }
+                    </div>
 
-                cartContainer.appendChild(cartItems);
-
-                document.querySelectorAll('.accept-invitation').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const invitationId = this.getAttribute('data-invitation-id');
-                        updateInvitationStatus(invitationId, 'accepted');
-                    });
-                });
-
-                document.querySelectorAll('.reject-invitation').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const invitationId = this.getAttribute('data-invitation-id');
-                        updateInvitationStatus(invitationId, 'rejected');
-                    });
-                });
+                    <div class="cart-section">
+                        <h3>Mes Derniers Avis</h3>
+                        ${ratingsSnapshot.empty ? `
+                            <div style="text-align: center; padding: 2rem;">
+                                <i class="fas fa-star fa-3x" style="color: #6c757d; margin-bottom: 1rem;"></i>
+                                <h3 style="color: #6c757d;">Aucun avis pour le moment</h3>
+                                <p>Les élèves vous noteront bientôt!</p>
+                            </div>
+                        ` : `
+                            <div class="cart-items">
+                                ${Array.from(ratingsSnapshot.docs).map(doc => {
+                                    const rating = doc.data();
+                                    const stars = generateRatingStars(rating.rating);
+                                    return `
+                                        <div class="cart-item">
+                                            <h4>${rating.studentName}</h4>
+                                            <div class="rating">
+                                                ${stars}
+                                                <span class="rating-value">${rating.rating}/5</span>
+                                            </div>
+                                            <p><strong>Date:</strong> ${rating.createdAt.toDate().toLocaleDateString('fr-FR')}</p>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `}
+                    </div>
+                `;
 
             } catch (error) {
                 console.error('Erreur panier professeur:', error);
@@ -1882,39 +1887,30 @@
                     <div style="text-align: center; padding: 2rem;">
                         <i class="fas fa-exclamation-circle fa-3x" style="color: #dc3545; margin-bottom: 1rem;"></i>
                         <h3 style="color: #dc3545;">Erreur de chargement</h3>
-                        <p>Impossible de charger les demandes. Veuillez réessayer.</p>
-                        <button class="btn btn-primary" onclick="showCart()">
-                            <i class="fas fa-redo"></i> Réessayer
-                        </button>
+                        <p>Impossible de charger vos données. Veuillez réessayer.</p>
                     </div>
                 `;
             }
         }
 
-        async function updateInvitationStatus(invitationId, status) {
+        async function toggleTeacherAvailability(teacherId, newStatus) {
             try {
-                await db.collection('invitations').doc(invitationId).update({
-                    status: status,
-                    respondedAt: new Date()
+                await db.collection('teachers').doc(teacherId).update({
+                    available: newStatus
                 });
 
-                if (status === 'accepted') {
-                    // Mettre à jour le compteur d'élèves du professeur
-                    const teacherDoc = await db.collection('teachers').doc(currentUser.id).get();
-                    if (teacherDoc.exists) {
-                        const teacher = teacherDoc.data();
-                        await db.collection('teachers').doc(currentUser.id).update({
-                            currentStudents: (teacher.currentStudents || 0) + 1
-                        });
-                    }
+                // Mettre à jour l'utilisateur courant
+                if (currentUser && currentUser.type === 'teacher') {
+                    currentUser.available = newStatus;
+                    localStorage.setItem('coverBrainCurrentUser', JSON.stringify(currentUser));
                 }
 
                 showCart();
-                showAlert('formAlert', `Invitation ${status === 'accepted' ? 'acceptée' : 'refusée'}`, 'success');
+                showAlert('formAlert', `Vous êtes maintenant ${newStatus ? 'visible' : 'caché'} sur la plateforme`, 'success');
 
             } catch (error) {
-                console.error('Erreur mise à jour invitation:', error);
-                showAlert('formAlert', 'Erreur lors de la mise à jour', 'danger');
+                console.error('Erreur changement disponibilité:', error);
+                showAlert('formAlert', 'Erreur lors du changement de statut', 'danger');
             }
         }
 
@@ -1923,75 +1919,79 @@
             const profileFormContainer = document.getElementById('profileFormContainer');
             profileFormContainer.innerHTML = '';
 
-            if (!currentUser) return;
+            if (!currentUser) {
+                profileFormContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <i class="fas fa-user fa-3x" style="color: #6c757d; margin-bottom: 1rem;"></i>
+                        <h3 style="color: #6c757d;">Connectez-vous pour voir votre profil</h3>
+                        <button class="btn btn-primary" onclick="openLoginModal()">
+                            <i class="fas fa-sign-in-alt"></i> Se connecter
+                        </button>
+                    </div>
+                `;
+                return;
+            }
 
             try {
                 if (currentUser.type === 'student') {
-                    // MODIFIÉ: Récupérer directement par ID
-                    const studentDoc = await db.collection('students').doc(currentUser.id).get();
-                    if (!studentDoc.exists) return;
+                    const snapshot = await db.collection('students')
+                        .where('phone', '==', currentUser.phone)
+                        .where('password', '==', currentUser.password)
+                        .get();
+
+                    if (snapshot.empty) return;
                     
-                    const student = studentDoc.data();
+                    const student = snapshot.docs[0].data();
 
                     profileFormContainer.innerHTML = `
-                        <div class="form-group">
-                            <label>Nom complet</label>
-                            <input type="text" class="form-control" value="${student.name}" id="profileName">
+                        <div class="alert alert-info">
+                            <h4>${student.name}</h4>
+                            <p><strong>Téléphone:</strong> ${student.phone}</p>
+                            <p><strong>Niveau:</strong> ${student.level}</p>
+                            <p><strong>Classe:</strong> ${student.class}</p>
+                            <p><strong>École:</strong> ${student.school}</p>
+                            <p><strong>Adresse:</strong> ${student.address}</p>
                         </div>
-                        <div class="form-group">
-                            <label>Niveau scolaire</label>
-                            <select class="form-control" id="profileLevel">
-                                <option value="primaire" ${student.level === 'primaire' ? 'selected' : ''}>Primaire</option>
-                                <option value="secondaire" ${student.level === 'secondaire' ? 'selected' : ''}>Secondaire</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Classe</label>
-                            <input type="text" class="form-control" value="${student.class}" id="profileClass">
-                        </div>
-                        <div class="form-group">
-                            <label>Établissement</label>
-                            <input type="text" class="form-control" value="${student.school}" id="profileSchool">
-                        </div>
-                        <div class="form-group">
-                            <label>Adresse</label>
-                            <input type="text" class="form-control" value="${student.address}" id="profileAddress">
-                        </div>
-                        <button class="btn btn-primary" onclick="saveProfile()">Sauvegarder</button>
                     `;
                 } else if (currentUser.type === 'teacher') {
-                    // MODIFIÉ: Récupérer directement par ID
-                    const teacherDoc = await db.collection('teachers').doc(currentUser.id).get();
-                    if (!teacherDoc.exists) return;
+                    const snapshot = await db.collection('teachers')
+                        .where('phone', '==', currentUser.phone)
+                        .where('password', '==', currentUser.password)
+                        .get();
+
+                    if (snapshot.empty) return;
                     
-                    const teacher = teacherDoc.data();
+                    const teacher = snapshot.docs[0].data();
+                    const ratingStars = generateRatingStars(teacher.rating);
 
                     profileFormContainer.innerHTML = `
-                        <div class="form-group">
-                            <label>Nom complet</label>
-                            <input type="text" class="form-control" value="${teacher.name}" id="profileName">
+                        <div class="alert alert-info">
+                            <h4>${teacher.name}</h4>
+                            <p><strong>Téléphone:</strong> ${teacher.phone}</p>
+                            <p><strong>Matières:</strong> ${teacher.subjects.join(', ')}</p>
+                            <p><strong>Niveaux:</strong> ${teacher.classLevels.join(', ')}</p>
+                            <p><strong>Formation:</strong> ${teacher.school}</p>
+                            <p><strong>Adresse:</strong> ${teacher.address}</p>
+                            <p><strong>Note moyenne:</strong> 
+                                <div class="rating">
+                                    ${ratingStars}
+                                    <span class="rating-value">${teacher.rating.toFixed(1)}/5 (${teacher.totalRatings} avis)</span>
+                                </div>
+                            </p>
+                            <p><strong>Statut:</strong> ${teacher.available ? '🟢 Visible sur la plateforme' : '🔴 Caché'}</p>
                         </div>
-                        <div class="form-group">
-                            <label>Matières enseignées</label>
-                            <input type="text" class="form-control" value="${teacher.subjects.join(', ')}" id="profileSubjects">
+                    `;
+                } else if (currentUser.type === 'admin') {
+                    profileFormContainer.innerHTML = `
+                        <div class="alert alert-info">
+                            <h4>${currentUser.name}</h4>
+                            <p><strong>Type:</strong> Administrateur</p>
+                            <p><strong>Téléphone:</strong> ${currentUser.phone}</p>
+                            <p>Accédez au panneau d'administration pour gérer la plateforme.</p>
+                            <button class="btn btn-primary" onclick="showTab('adminSection')">
+                                <i class="fas fa-cog"></i> Panneau d'administration
+                            </button>
                         </div>
-                        <div class="form-group">
-                            <label>Niveaux enseignés</label>
-                            <input type="text" class="form-control" value="${teacher.classLevels.join(', ')}" id="profileClassLevels">
-                        </div>
-                        <div class="form-group">
-                            <label>Formation/Établissement</label>
-                            <input type="text" class="form-control" value="${teacher.school}" id="profileSchool">
-                        </div>
-                        <div class="form-group">
-                            <label>Adresse</label>
-                            <input type="text" class="form-control" value="${teacher.address}" id="profileAddress">
-                        </div>
-                        <div class="form-group">
-                            <label>Nombre max d'élèves</label>
-                            <input type="number" class="form-control" value="${teacher.maxStudents}" id="profileMaxStudents" min="1" max="20">
-                        </div>
-                        <button class="btn btn-primary" onclick="saveProfile()">Sauvegarder</button>
                     `;
                 }
             } catch (error) {
@@ -2000,52 +2000,28 @@
             }
         }
 
-        async function saveProfile() {
-            if (!currentUser) return;
-
-            try {
-                if (currentUser.type === 'student') {
-                    // MODIFIÉ: Mettre à jour directement par ID
-                    await db.collection('students').doc(currentUser.id).update({
-                        name: document.getElementById('profileName').value,
-                        level: document.getElementById('profileLevel').value,
-                        class: document.getElementById('profileClass').value,
-                        school: document.getElementById('profileSchool').value,
-                        address: document.getElementById('profileAddress').value
-                    });
-
-                } else if (currentUser.type === 'teacher') {
-                    // MODIFIÉ: Mettre à jour directement par ID
-                    await db.collection('teachers').doc(currentUser.id).update({
-                        name: document.getElementById('profileName').value,
-                        subjects: document.getElementById('profileSubjects').value.split(',').map(s => s.trim()),
-                        classLevels: document.getElementById('profileClassLevels').value.split(',').map(s => s.trim()),
-                        school: document.getElementById('profileSchool').value,
-                        address: document.getElementById('profileAddress').value,
-                        maxStudents: parseInt(document.getElementById('profileMaxStudents').value)
-                    });
-                }
-
-                // Mettre à jour l'utilisateur courant
-                currentUser.name = document.getElementById('profileName').value;
-                localStorage.setItem('coverBrainCurrentUser', JSON.stringify(currentUser));
-                checkLoginStatus();
-
-                showAlert('formAlert', 'Profil mis à jour avec succès!', 'success');
-
-            } catch (error) {
-                console.error('Erreur sauvegarde profil:', error);
-                showAlert('formAlert', 'Erreur lors de la sauvegarde du profil', 'danger');
+        // ===== ADMIN PANEL =====
+        function showAdminPanel() {
+            if (currentUser && currentUser.type === 'admin') {
+                showTab('adminSection');
+            } else {
+                showAlert('formAlert', 'Accès administrateur requis', 'danger');
             }
         }
 
-        // ===== PANEL ADMIN =====
-        async function showAdminPanel() {
-            showTab('adminSection');
+        function showAdminIfAllowed() {
+            if (currentUser && currentUser.type === 'admin') {
+                showTab('adminSection');
+            } else {
+                showAlert('formAlert', 'Accès réservé aux administrateurs', 'warning');
+            }
         }
 
         async function loadAdminPanel() {
-            if (!currentUser || currentUser.type !== 'admin') return;
+            if (!currentUser || currentUser.type !== 'admin') {
+                showAlert('formAlert', 'Accès administrateur requis', 'danger');
+                return;
+            }
 
             try {
                 await loadAdminStats();
@@ -2053,22 +2029,40 @@
                 await loadAdminComments();
             } catch (error) {
                 console.error('Erreur chargement panel admin:', error);
+                showAlert('formAlert', 'Erreur lors du chargement du panneau admin', 'danger');
             }
         }
 
         async function loadAdminStats() {
             try {
-                // MODIFIÉ: Supprimer la référence à 'users'
-                const [studentsSnapshot, teachersSnapshot, invitationsSnapshot] = await Promise.all([
-                    db.collection('students').get(),
-                    db.collection('teachers').get(),
-                    db.collection('invitations').get()
-                ]);
+                // Compter les utilisateurs avec une gestion d'erreur individuelle
+                let studentsCount = 0, teachersCount = 0, ratingsCount = 0;
+                
+                try {
+                    const studentsSnapshot = await db.collection('students').get();
+                    studentsCount = studentsSnapshot.size;
+                } catch (error) {
+                    console.error('Erreur comptage étudiants:', error);
+                }
+                
+                try {
+                    const teachersSnapshot = await db.collection('teachers').get();
+                    teachersCount = teachersSnapshot.size;
+                } catch (error) {
+                    console.error('Erreur comptage professeurs:', error);
+                }
+                
+                try {
+                    const ratingsSnapshot = await db.collection('ratings').get();
+                    ratingsCount = ratingsSnapshot.size;
+                } catch (error) {
+                    console.error('Erreur comptage avis:', error);
+                }
 
-                document.getElementById('totalUsers').textContent = studentsSnapshot.size + teachersSnapshot.size;
-                document.getElementById('totalStudents').textContent = studentsSnapshot.size;
-                document.getElementById('totalTeachers').textContent = teachersSnapshot.size;
-                document.getElementById('totalInvitations').textContent = invitationsSnapshot.size;
+                document.getElementById('totalUsers').textContent = studentsCount + teachersCount;
+                document.getElementById('totalStudents').textContent = studentsCount;
+                document.getElementById('totalTeachers').textContent = teachersCount;
+                document.getElementById('totalRatings').textContent = ratingsCount;
 
             } catch (error) {
                 console.error('Erreur stats admin:', error);
@@ -2079,67 +2073,125 @@
             const usersList = document.getElementById('usersList');
             
             try {
+                // Charger les étudiants et professeurs en parallèle
                 const [studentsSnapshot, teachersSnapshot] = await Promise.all([
-                    db.collection('students').get(),
-                    db.collection('teachers').get()
+                    db.collection('students').get().catch(error => {
+                        console.error('Erreur chargement étudiants:', error);
+                        return { empty: true, forEach: () => {} };
+                    }),
+                    db.collection('teachers').get().catch(error => {
+                        console.error('Erreur chargement professeurs:', error);
+                        return { empty: true, forEach: () => {} };
+                    })
                 ]);
-
-                if (studentsSnapshot.empty && teachersSnapshot.empty) {
-                    usersList.innerHTML = '<p>Aucun utilisateur trouvé</p>';
-                    return;
-                }
 
                 usersList.innerHTML = '';
 
-                // Afficher les étudiants
-                studentsSnapshot.forEach(doc => {
-                    const student = { id: doc.id, ...doc.data() };
-                    
-                    const userItem = document.createElement('div');
-                    userItem.className = `user-item`; // MODIFIÉ: Supprimé banned car n'existe pas
-                    userItem.innerHTML = `
-                        <div>
-                            <div style="font-weight: 600;">${student.name}</div>
-                            <div style="color: #6c757d; font-size: 0.9rem;">
-                                ${student.phone} • Élève
-                            </div>
-                            <div style="color: #6c757d; font-size: 0.8rem;">Niveau: ${student.level}, Classe: ${student.class}</div>
-                        </div>
-                        <div class="user-actions">
-                            <button class="btn btn-danger btn-sm" onclick="banUser('${student.id}', 'student')">
-                                <i class="fas fa-ban"></i> Bannir
-                            </button>
+                if ((!studentsSnapshot || studentsSnapshot.empty) && (!teachersSnapshot || teachersSnapshot.empty)) {
+                    usersList.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #6c757d;">
+                            <i class="fas fa-users fa-3x" style="margin-bottom: 1rem;"></i>
+                            <h3>Aucun utilisateur trouvé</h3>
+                            <p>La base de données semble vide pour le moment.</p>
                         </div>
                     `;
-                    usersList.appendChild(userItem);
-                });
+                    return;
+                }
+
+                // Afficher les étudiants
+                if (studentsSnapshot && !studentsSnapshot.empty) {
+                    studentsSnapshot.forEach(doc => {
+                        try {
+                            const user = { id: doc.id, ...doc.data() };
+                            // S'assurer que les propriétés existent
+                            const userName = user.name || 'Nom non spécifié';
+                            const userPhone = user.phone || 'Téléphone non spécifié';
+                            const userLevel = user.level || 'Niveau non spécifié';
+                            const isBanned = user.banned || false;
+                            
+                            const userItem = document.createElement('div');
+                            userItem.className = `user-item ${isBanned ? 'banned' : ''}`;
+                            userItem.innerHTML = `
+                                <div>
+                                    <div style="font-weight: 600;">${userName}</div>
+                                    <div style="color: #6c757d; font-size: 0.9rem;">
+                                        ${userPhone} • Élève • ${userLevel} ${isBanned ? '• 🚫 BANNI' : ''}
+                                    </div>
+                                </div>
+                                <div class="user-actions">
+                                    ${!isBanned ? `
+                                        <button class="btn btn-danger btn-sm" onclick="banUser('${user.id}', 'student')">
+                                            <i class="fas fa-ban"></i> Bannir
+                                        </button>
+                                    ` : `
+                                        <button class="btn btn-success btn-sm" onclick="unbanUser('${user.id}', 'student')">
+                                            <i class="fas fa-check"></i> Débannir
+                                        </button>
+                                    `}
+                                </div>
+                            `;
+                            usersList.appendChild(userItem);
+                        } catch (error) {
+                            console.error('Erreur affichage étudiant:', error, doc.data());
+                        }
+                    });
+                }
 
                 // Afficher les professeurs
-                teachersSnapshot.forEach(doc => {
-                    const teacher = { id: doc.id, ...doc.data() };
-                    
-                    const userItem = document.createElement('div');
-                    userItem.className = `user-item`; // MODIFIÉ: Supprimé banned car n'existe pas
-                    userItem.innerHTML = `
-                        <div>
-                            <div style="font-weight: 600;">${teacher.name}</div>
-                            <div style="color: #6c757d; font-size: 0.9rem;">
-                                ${teacher.phone} • Professeur
-                            </div>
-                            <div style="color: #6c757d; font-size: 0.8rem;">Matières: ${teacher.subjects.join(', ')}</div>
-                        </div>
-                        <div class="user-actions">
-                            <button class="btn btn-danger btn-sm" onclick="banUser('${teacher.id}', 'teacher')">
-                                <i class="fas fa-ban"></i> Bannir
-                            </button>
-                        </div>
-                    `;
-                    usersList.appendChild(userItem);
-                });
+                if (teachersSnapshot && !teachersSnapshot.empty) {
+                    teachersSnapshot.forEach(doc => {
+                        try {
+                            const user = { id: doc.id, ...doc.data() };
+                            // S'assurer que les propriétés existent
+                            const userName = user.name || 'Nom non spécifié';
+                            const userPhone = user.phone || 'Téléphone non spécifié';
+                            const userSubjects = user.subjects ? user.subjects.join(', ') : 'Matières non spécifiées';
+                            const isBanned = user.banned || false;
+                            const isVerified = user.verified !== undefined ? user.verified : false;
+                            
+                            const userItem = document.createElement('div');
+                            userItem.className = `user-item ${isBanned ? 'banned' : ''}`;
+                            userItem.innerHTML = `
+                                <div>
+                                    <div style="font-weight: 600;">${userName}</div>
+                                    <div style="color: #6c757d; font-size: 0.9rem;">
+                                        ${userPhone} • Professeur • ${userSubjects} ${isBanned ? '• 🚫 BANNI' : ''}
+                                    </div>
+                                </div>
+                                <div class="user-actions">
+                                    ${!isBanned ? `
+                                        <button class="btn btn-danger btn-sm" onclick="banUser('${user.id}', 'teacher')">
+                                            <i class="fas fa-ban"></i> Bannir
+                                        </button>
+                                    ` : `
+                                        <button class="btn btn-success btn-sm" onclick="unbanUser('${user.id}', 'teacher')">
+                                            <i class="fas fa-check"></i> Débannir
+                                        </button>
+                                    `}
+                                    <button class="btn btn-warning btn-sm" onclick="toggleTeacherVerification('${user.id}')">
+                                        <i class="fas fa-certificate"></i> ${isVerified ? 'Dévérifier' : 'Vérifier'}
+                                    </button>
+                                </div>
+                            `;
+                            usersList.appendChild(userItem);
+                        } catch (error) {
+                            console.error('Erreur affichage professeur:', error, doc.data());
+                        }
+                    });
+                }
 
             } catch (error) {
                 console.error('Erreur chargement utilisateurs:', error);
-                usersList.innerHTML = '<p>Erreur lors du chargement des utilisateurs</p>';
+                usersList.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #dc3545;">
+                        <i class="fas fa-exclamation-triangle fa-3x" style="margin-bottom: 1rem;"></i>
+                        <h3>Erreur de chargement</h3>
+                        <p>Impossible de charger la liste des utilisateurs.</p>
+                        <button class="btn btn-primary btn-sm" onclick="loadUsersList()">
+                            <i class="fas fa-redo"></i> Réessayer
+                        </button>
+                    </div>
+                `;
             }
         }
 
@@ -2152,37 +2204,69 @@
                     .get();
 
                 if (snapshot.empty) {
-                    adminCommentsList.innerHTML = '<p>Aucun commentaire</p>';
+                    adminCommentsList.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #6c757d;">
+                            <i class="fas fa-comments fa-3x" style="margin-bottom: 1rem;"></i>
+                            <h3>Aucun commentaire</h3>
+                            <p>Aucun commentaire n'a été publié pour le moment.</p>
+                        </div>
+                    `;
                     return;
                 }
 
                 adminCommentsList.innerHTML = '';
 
                 snapshot.forEach(doc => {
-                    const comment = { id: doc.id, ...doc.data() };
-                    
-                    const commentItem = document.createElement('div');
-                    commentItem.className = 'comment-item';
-                    commentItem.innerHTML = `
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600;">${comment.author}</div>
-                            <div style="color: #6c757d; font-size: 0.9rem;">
-                                ${comment.createdAt?.toDate().toLocaleDateString('fr-FR')}
+                    try {
+                        const comment = { id: doc.id, ...doc.data() };
+                        // S'assurer que les propriétés existent
+                        const commentAuthor = comment.author || 'Anonyme';
+                        const commentText = comment.text || '';
+                        const isApproved = comment.approved !== undefined ? comment.approved : true;
+                        const commentDate = comment.createdAt ? 
+                            (comment.createdAt.toDate ? comment.createdAt.toDate().toLocaleDateString('fr-FR') : new Date(comment.createdAt).toLocaleDateString('fr-FR')) : 
+                            'Date inconnue';
+                        
+                        const commentItem = document.createElement('div');
+                        commentItem.className = 'comment-item';
+                        commentItem.innerHTML = `
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600;">${commentAuthor}</div>
+                                <div style="color: #6c757d; font-size: 0.9rem;">
+                                    ${commentDate}
+                                    ${!isApproved ? '• ⚠️ En attente' : ''}
+                                </div>
+                                <div>${commentText}</div>
                             </div>
-                            <div>${comment.text}</div>
-                        </div>
-                        <div class="comment-actions">
-                            <button class="btn btn-danger btn-sm" onclick="deleteComment('${comment.id}')">
-                                <i class="fas fa-trash"></i> Supprimer
-                            </button>
-                        </div>
-                    `;
-                    adminCommentsList.appendChild(commentItem);
+                            <div class="comment-actions">
+                                ${!isApproved ? `
+                                    <button class="btn btn-success btn-sm" onclick="approveComment('${comment.id}')">
+                                        <i class="fas fa-check"></i> Approuver
+                                    </button>
+                                ` : ''}
+                                <button class="btn btn-danger btn-sm" onclick="deleteComment('${comment.id}')">
+                                    <i class="fas fa-trash"></i> Supprimer
+                                </button>
+                            </div>
+                        `;
+                        adminCommentsList.appendChild(commentItem);
+                    } catch (error) {
+                        console.error('Erreur affichage commentaire:', error, doc.data());
+                    }
                 });
 
             } catch (error) {
                 console.error('Erreur chargement commentaires admin:', error);
-                adminCommentsList.innerHTML = '<p>Erreur lors du chargement des commentaires</p>';
+                adminCommentsList.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #dc3545;">
+                        <i class="fas fa-exclamation-triangle fa-3x" style="margin-bottom: 1rem;"></i>
+                        <h3>Erreur de chargement</h3>
+                        <p>Impossible de charger les commentaires.</p>
+                        <button class="btn btn-primary btn-sm" onclick="loadAdminComments()">
+                            <i class="fas fa-redo"></i> Réessayer
+                        </button>
+                    </div>
+                `;
             }
         }
 
@@ -2191,16 +2275,66 @@
             if (!confirm('Êtes-vous sûr de vouloir bannir cet utilisateur ?')) return;
             
             try {
-                // MODIFIÉ: Ajouter le champ banned qui n'existait pas
                 await db.collection(userType + 's').doc(userId).update({
                     banned: true,
-                    bannedAt: new Date()
+                    updatedAt: new Date()
                 });
                 await loadUsersList();
                 showAlert('formAlert', 'Utilisateur banni avec succès', 'success');
             } catch (error) {
                 console.error('Erreur bannissement:', error);
-                showAlert('formAlert', 'Erreur lors du bannissement', 'danger');
+                showAlert('formAlert', 'Erreur lors du bannissement: ' + error.message, 'danger');
+            }
+        }
+
+        async function unbanUser(userId, userType) {
+            try {
+                await db.collection(userType + 's').doc(userId).update({
+                    banned: false,
+                    updatedAt: new Date()
+                });
+                await loadUsersList();
+                showAlert('formAlert', 'Utilisateur débanni avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur débannissement:', error);
+                showAlert('formAlert', 'Erreur lors du débannissement: ' + error.message, 'danger');
+            }
+        }
+
+        async function toggleTeacherVerification(userId) {
+            try {
+                const teacherDoc = await db.collection('teachers').doc(userId).get();
+                if (!teacherDoc.exists) {
+                    showAlert('formAlert', 'Professeur non trouvé', 'danger');
+                    return;
+                }
+                
+                const teacherData = teacherDoc.data();
+                const currentStatus = teacherData.verified !== undefined ? teacherData.verified : false;
+                
+                await db.collection('teachers').doc(userId).update({
+                    verified: !currentStatus
+                });
+                
+                await loadUsersList();
+                showAlert('formAlert', `Professeur ${!currentStatus ? 'vérifié' : 'dévérifié'} avec succès`, 'success');
+            } catch (error) {
+                console.error('Erreur vérification professeur:', error);
+                showAlert('formAlert', 'Erreur lors de la vérification: ' + error.message, 'danger');
+            }
+        }
+
+        async function approveComment(commentId) {
+            try {
+                await db.collection('comments').doc(commentId).update({
+                    approved: true
+                });
+                await loadAdminComments();
+                await loadComments();
+                showAlert('formAlert', 'Commentaire approuvé avec succès', 'success');
+            } catch (error) {
+                console.error('Erreur approbation commentaire:', error);
+                showAlert('formAlert', 'Erreur lors de l\'approbation', 'danger');
             }
         }
 
@@ -2220,7 +2354,6 @@
 
         async function savePlatformSettings() {
             try {
-                // Sauvegarder les paramètres
                 const primaryPrice = document.getElementById('primaryPrice').value;
                 const secondaryPrice = document.getElementById('secondaryPrice').value;
                 const commissionRate = document.getElementById('commissionRate').value;
@@ -2262,6 +2395,15 @@
                 document.getElementById('logoutNavItem').classList.remove('hidden');
                 document.getElementById('loginNavItem').classList.add('hidden');
 
+                // Afficher l'onglet admin si l'utilisateur est admin
+                if (currentUser.type === 'admin') {
+                    document.getElementById('adminNavTab').classList.remove('hidden');
+                    document.getElementById('adminMenuLink').classList.remove('hidden');
+                } else {
+                    document.getElementById('adminNavTab').classList.add('hidden');
+                    document.getElementById('adminMenuLink').classList.add('hidden');
+                }
+
                 // Mettre à jour le badge du panier
                 if (currentUser.type === 'student') {
                     updateCartBadge();
@@ -2270,6 +2412,8 @@
                 document.getElementById('userNavItem').classList.add('hidden');
                 document.getElementById('logoutNavItem').classList.add('hidden');
                 document.getElementById('loginNavItem').classList.remove('hidden');
+                document.getElementById('adminNavTab').classList.add('hidden');
+                document.getElementById('adminMenuLink').classList.add('hidden');
                 document.getElementById('cartBadge').classList.add('hidden');
             }
         }
@@ -2278,7 +2422,7 @@
             if (!currentUser || currentUser.type !== 'student') return;
 
             try {
-                const snapshot = await db.collection('invitations')
+                const snapshot = await db.collection('ratings')
                     .where('studentId', '==', currentUser.id)
                     .get();
 
@@ -2303,15 +2447,6 @@
                 alertContainer.classList.add('hidden');
             }, 5000);
         }
-
-        // Exposer les fonctions globales
-        window.saveProfile = saveProfile;
-        window.showTab = showTab;
-        window.banUser = banUser;
-        window.deleteComment = deleteComment;
-        window.savePlatformSettings = savePlatformSettings;
-        window.showAdminPanel = showAdminPanel;
-        window.updateInvitationStatus = updateInvitationStatus;
     </script>
 </body>
 </html>
