@@ -1139,8 +1139,8 @@
                         <div class="stat-label">Professeurs</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-number" id="totalRatings">0</div>
-                        <div class="stat-label">Avis</div>
+                        <div class="stat-number" id="totalComments">0</div>
+                        <div class="stat-label">Commentaires</div>
                     </div>
                 </div>
 
@@ -1152,9 +1152,17 @@
                     </div>
                 </div>
 
-                <!-- Modération des Commentaires -->
+                <!-- Modération des Commentaires - SECTION CORRIGÉE -->
                 <div class="admin-section">
                     <h3><i class="fas fa-comments"></i> Modération des Commentaires</h3>
+                    <div class="admin-comments-controls" style="margin-bottom: 1rem; display: flex; gap: 10px;">
+                        <button class="btn btn-primary btn-sm" onclick="loadAdminComments()">
+                            <i class="fas fa-sync-alt"></i> Actualiser
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteAllComments()" id="deleteAllCommentsBtn">
+                            <i class="fas fa-trash"></i> Tout supprimer
+                        </button>
+                    </div>
                     <div class="comments-list" id="adminCommentsList">
                         <!-- Liste des commentaires chargée dynamiquement -->
                     </div>
@@ -1195,8 +1203,8 @@
                         <div style="max-height: 200px; overflow-y: auto; margin-bottom: 15px; padding: 10px; background: white; border-radius: 5px;">
                             <h5>Conditions pour les Professeurs :</h5>
                             <ul style="margin-bottom: 15px;">
-                                <li>J'accepte le montant fixé par l'administrateur pour mes services (5$/séance au primaire, 7$/séance au secondaire par défaut)</li>
-                                <li>Je m'engage à verser 10% de mes bénéfices mensuels au numéro +243840426427 via Orange Money</li>
+                                <li>J'accepte le montant fixé par l'administrateur pour mes services (<span id="currentPrimaryPrice">5</span>$/séance au primaire, <span id="currentSecondaryPrice">7</span>$/séance au secondaire)</li>
+                                <li>Je m'engage à verser <span id="currentCommissionRate">10</span>% de mes bénéfices mensuels au numéro +243840426427 via Orange Money</li>
                                 <li>Je comprends que tout retard de paiement pourra entraîner la suspension de mon compte</li>
                                 <li>Les montants sont modifiables à tout moment par l'administration</li>
                             </ul>
@@ -1249,8 +1257,8 @@
                             <label for="studentLevel">Niveau scolaire</label>
                             <select id="studentLevel" class="form-control" required>
                                 <option value="">Sélectionnez</option>
-                                <option value="primaire">Primaire (5$/séance)</option>
-                                <option value="secondaire">Secondaire (7$/séance)</option>
+                                <option value="primaire">Primaire (<span id="primaryPriceDisplay">5</span>$/séance)</option>
+                                <option value="secondaire">Secondaire (<span id="secondaryPriceDisplay">7</span>$/séance)</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -1285,8 +1293,8 @@
                     <form id="teacherForm" class="hidden" onsubmit="event.preventDefault(); registerTeacher();">
                         <div class="payment-info">
                             <h4><i class="fas fa-info-circle"></i> Informations importantes pour les Professeurs</h4>
-                            <p><strong>Commission :</strong> 10% des revenus mensuels à verser au +243 840426427</p>
-                            <p><strong>Tarifs par défaut :</strong> Primaire: 5$/séance, Secondaire: 7$/séance</p>
+                            <p><strong>Commission :</strong> <span id="commissionRateDisplay">10</span>% des revenus mensuels à verser au +243 840426427</p>
+                            <p><strong>Tarifs actuels :</strong> Primaire: <span id="teacherPrimaryPrice">5</span>$/séance, Secondaire: <span id="teacherSecondaryPrice">7</span>$/séance</p>
                             <p><strong>Attention :</strong> Les mauvais payeurs seront bannis définitivement</p>
                         </div>
                         <div class="form-group">
@@ -1496,6 +1504,31 @@
         // ===== GLOBAL VARIABLES =====
         let currentUser = JSON.parse(localStorage.getItem('coverBrainCurrentUser')) || null;
         let isLoggedIn = currentUser !== null;
+        let platformSettings = {
+            primaryPrice: 5,
+            secondaryPrice: 7,
+            commissionRate: 10
+        };
+
+        // ===== CRÉATION AUTOMATIQUE DES PARAMÈTRES =====
+        async function createDefaultSettings() {
+            try {
+                const settingsDoc = await db.collection('platformSettings').doc('pricing').get();
+                
+                if (!settingsDoc.exists) {
+                    console.log('🆕 Création des paramètres par défaut...');
+                    await db.collection('platformSettings').doc('pricing').set({
+                        primaryPrice: 5,
+                        secondaryPrice: 7,
+                        commissionRate: 10,
+                        updatedAt: new Date()
+                    });
+                    console.log('✅ Paramètres créés avec succès!');
+                }
+            } catch (error) {
+                console.error('Erreur création paramètres:', error);
+            }
+        }
 
         // ===== APPLICATION INITIALIZATION =====
         document.addEventListener('DOMContentLoaded', function() {
@@ -1505,6 +1538,8 @@
         async function initializeApp() {
             setupEventListeners();
             checkLoginStatus();
+            await createDefaultSettings(); // CRÉE LES PARAMÈTRES SI BESOIN
+            await loadPlatformSettings();
             await loadComments();
             console.log("✅ Application Cover Brain initialisée");
         }
@@ -1515,6 +1550,70 @@
                     document.getElementById('moreMenu').classList.remove('show');
                 }
             });
+        }
+
+        // ===== CHARGEMENT DES PARAMÈTRES =====
+        async function loadPlatformSettings() {
+            try {
+                const settingsDoc = await db.collection('platformSettings').doc('pricing').get();
+                if (settingsDoc.exists) {
+                    const settings = settingsDoc.data();
+                    platformSettings = {
+                        primaryPrice: settings.primaryPrice || 5,
+                        secondaryPrice: settings.secondaryPrice || 7,
+                        commissionRate: settings.commissionRate || 10
+                    };
+                    
+                    // Mettre à jour l'affichage des prix
+                    updatePriceDisplays();
+                    
+                    // Mettre à jour les valeurs dans le panneau admin
+                    if (document.getElementById('primaryPrice')) {
+                        document.getElementById('primaryPrice').value = platformSettings.primaryPrice;
+                        document.getElementById('secondaryPrice').value = platformSettings.secondaryPrice;
+                        document.getElementById('commissionRate').value = platformSettings.commissionRate;
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur chargement paramètres:', error);
+            }
+        }
+
+        // ===== MISE À JOUR DE L'AFFICHAGE DES PRIX =====
+        function updatePriceDisplays() {
+            console.log('🔄 Mise à jour des prix:', platformSettings);
+            
+            // Mettre à jour tous les éléments avec les prix
+            const priceElements = {
+                'currentPrimaryPrice': platformSettings.primaryPrice,
+                'currentSecondaryPrice': platformSettings.secondaryPrice,
+                'currentCommissionRate': platformSettings.commissionRate,
+                'primaryPriceDisplay': platformSettings.primaryPrice,
+                'secondaryPriceDisplay': platformSettings.secondaryPrice,
+                'commissionRateDisplay': platformSettings.commissionRate,
+                'teacherPrimaryPrice': platformSettings.primaryPrice,
+                'teacherSecondaryPrice': platformSettings.secondaryPrice
+            };
+            
+            Object.keys(priceElements).forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = priceElements[id];
+                }
+            });
+            
+            // Mettre à jour aussi les options du select
+            const primaryOption = document.querySelector('option[value="primaire"]');
+            const secondaryOption = document.querySelector('option[value="secondaire"]');
+            
+            if (primaryOption) {
+                primaryOption.textContent = `Primaire (${platformSettings.primaryPrice}$/séance)`;
+            }
+            if (secondaryOption) {
+                secondaryOption.textContent = `Secondaire (${platformSettings.secondaryPrice}$/séance)`;
+            }
+            
+            console.log('✅ Affichage des prix mis à jour');
         }
 
         // ===== FONCTION POUR AFFICHER/MASQUER LE MOT DE PASSE =====
@@ -1569,6 +1668,8 @@
                 document.getElementById('resultsSection').classList.add('hidden');
             } else if (tabId === 'adminSection') {
                 loadAdminPanel();
+            } else if (tabId === 'inscription') {
+                updatePriceDisplays(); // FORCER le rafraîchissement des prix
             }
             
             document.getElementById('moreMenu').classList.remove('show');
@@ -1719,8 +1820,8 @@
                                 <div class="form-group">
                                     <label for="modifyStudentLevel">Niveau scolaire</label>
                                     <select id="modifyStudentLevel" class="form-control" required>
-                                        <option value="primaire" ${student.level === 'primaire' ? 'selected' : ''}>Primaire (5$/séance)</option>
-                                        <option value="secondaire" ${student.level === 'secondaire' ? 'selected' : ''}>Secondaire (7$/séance)</option>
+                                        <option value="primaire" ${student.level === 'primaire' ? 'selected' : ''}>Primaire (${platformSettings.primaryPrice}$/séance)</option>
+                                        <option value="secondaire" ${student.level === 'secondaire' ? 'selected' : ''}>Secondaire (${platformSettings.secondaryPrice}$/séance)</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
@@ -2113,7 +2214,7 @@
             }
 
             teachers.forEach(teacher => {
-                const price = currentUser?.level === 'primaire' ? 5 : 7;
+                const price = currentUser?.level === 'primaire' ? platformSettings.primaryPrice : platformSettings.secondaryPrice;
                 const ratingStars = generateRatingStars(teacher.rating);
 
                 const teacherCard = document.createElement('div');
@@ -2315,6 +2416,82 @@
             }
         }
 
+        // ===== GESTION DES COMMENTAIRES ADMIN =====
+        async function loadAdminComments() {
+            try {
+                const snapshot = await db.collection('comments')
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                const adminCommentsList = document.getElementById('adminCommentsList');
+                adminCommentsList.innerHTML = '';
+
+                if (snapshot.empty) {
+                    adminCommentsList.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #6c757d;">
+                            <i class="fas fa-comments fa-2x"></i>
+                            <p>Aucun commentaire à modérer</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const comment = doc.data();
+                    const commentDate = comment.createdAt.toDate();
+                    const formattedDate = commentDate.toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    const commentItem = document.createElement('div');
+                    commentItem.className = 'comment-item';
+                    commentItem.innerHTML = `
+                        <div style="flex: 1;">
+                            <strong>${comment.author}</strong>
+                            <div style="color: #6c757d; font-size: 0.9rem; margin: 5px 0;">${formattedDate}</div>
+                            <div>${comment.text}</div>
+                        </div>
+                        <div class="comment-actions">
+                            <button class="btn btn-sm btn-danger" onclick="deleteComment('${doc.id}')">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
+                        </div>
+                    `;
+
+                    adminCommentsList.appendChild(commentItem);
+                });
+
+            } catch (error) {
+                console.error('Erreur chargement commentaires admin:', error);
+            }
+        }
+
+        async function deleteAllComments() {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer TOUS les commentaires ? Cette action est irréversible.')) return;
+
+            try {
+                const snapshot = await db.collection('comments').get();
+                const batch = db.batch();
+                
+                snapshot.forEach(doc => {
+                    batch.delete(doc.ref);
+                });
+
+                await batch.commit();
+                alert('Tous les commentaires ont été supprimés avec succès!');
+                loadAdminComments();
+                loadComments();
+
+            } catch (error) {
+                console.error('Erreur suppression commentaires:', error);
+                alert('Erreur lors de la suppression des commentaires');
+            }
+        }
+
         // ===== AUTHENTIFICATION =====
         function openLoginModal() {
             document.getElementById('loginModal').style.display = 'flex';
@@ -2465,7 +2642,10 @@
                 document.getElementById('totalUsers').textContent = studentsSnapshot.size + teachersSnapshot.size;
                 document.getElementById('totalStudents').textContent = studentsSnapshot.size;
                 document.getElementById('totalTeachers').textContent = teachersSnapshot.size;
-                document.getElementById('totalRatings').textContent = commentsSnapshot.size;
+                document.getElementById('totalComments').textContent = commentsSnapshot.size;
+
+                // Charger les paramètres actuels
+                await loadPlatformSettings();
 
                 // Charger la liste des utilisateurs
                 const usersList = document.getElementById('usersList');
@@ -2514,30 +2694,7 @@
                 });
 
                 // Charger les commentaires pour modération
-                const adminCommentsList = document.getElementById('adminCommentsList');
-                adminCommentsList.innerHTML = '';
-
-                commentsSnapshot.forEach(doc => {
-                    const comment = doc.data();
-                    const commentDate = comment.createdAt.toDate();
-                    const formattedDate = commentDate.toLocaleDateString('fr-FR');
-
-                    const commentItem = document.createElement('div');
-                    commentItem.className = 'comment-item';
-                    commentItem.innerHTML = `
-                        <div>
-                            <strong>${comment.author}</strong>
-                            <div style="color: #6c757d; font-size: 0.9rem;">${formattedDate}</div>
-                            <div>${comment.text}</div>
-                        </div>
-                        <div class="comment-actions">
-                            <button class="btn btn-sm btn-danger" onclick="deleteComment('${doc.id}')">
-                                <i class="fas fa-trash"></i> Supprimer
-                            </button>
-                        </div>
-                    `;
-                    adminCommentsList.appendChild(commentItem);
-                });
+                await loadAdminComments();
 
             } catch (error) {
                 console.error('Erreur chargement panel admin:', error);
@@ -2582,7 +2739,7 @@
                 await db.collection('comments').doc(commentId).delete();
                 alert('Commentaire supprimé avec succès');
                 // Recharger les commentaires dans l'admin et dans la section publique
-                loadAdminPanel();
+                loadAdminComments();
                 loadComments();
             } catch (error) {
                 console.error('Erreur suppression commentaire:', error);
@@ -2590,23 +2747,34 @@
             }
         }
 
+        // ===== SAUVEGARDE DES PARAMÈTRES =====
         async function savePlatformSettings() {
             try {
-                const primaryPrice = document.getElementById('primaryPrice').value;
-                const secondaryPrice = document.getElementById('secondaryPrice').value;
-                const commissionRate = document.getElementById('commissionRate').value;
+                const primaryPrice = parseInt(document.getElementById('primaryPrice').value);
+                const secondaryPrice = parseInt(document.getElementById('secondaryPrice').value);
+                const commissionRate = parseInt(document.getElementById('commissionRate').value);
 
+                // Mettre à jour IMMÉDIATEMENT les variables locales
+                platformSettings.primaryPrice = primaryPrice;
+                platformSettings.secondaryPrice = secondaryPrice;
+                platformSettings.commissionRate = commissionRate;
+
+                // Sauvegarder dans Firebase
                 await db.collection('platformSettings').doc('pricing').set({
-                    primaryPrice: parseInt(primaryPrice),
-                    secondaryPrice: parseInt(secondaryPrice),
-                    commissionRate: parseInt(commissionRate),
+                    primaryPrice: primaryPrice,
+                    secondaryPrice: secondaryPrice,
+                    commissionRate: commissionRate,
                     updatedAt: new Date()
                 }, { merge: true });
 
-                alert('Paramètres sauvegardés avec succès!');
+                // FORCER la mise à jour de l'affichage sur TOUTES les pages
+                updatePriceDisplays();
+                
+                alert('✅ Paramètres sauvegardés! Les nouveaux tarifs sont maintenant actifs partout.');
+
             } catch (error) {
                 console.error('Erreur sauvegarde paramètres:', error);
-                alert('Erreur lors de la sauvegarde des paramètres');
+                alert('❌ Erreur lors de la sauvegarde des paramètres');
             }
         }
 
