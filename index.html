@@ -1569,8 +1569,8 @@
                         </div>
                         
                         <h3>Contact</h3>
-                        <p><strong>WhatsApp : +243 840426427</strong></p>
-                        <p><strong>Email : contact@coverbrain.cd</strong></p>
+            
+                        <p><strong>Email : xtronicsconcepts@gmail.com</strong></p>
                         
                         <div class="teacher-actions" style="margin-top: 2rem;">
                             <button class="btn btn-outline" onclick="showTab('confidentialite')">
@@ -2380,10 +2380,6 @@
                 return;
             }
 
-            if (currentUser.type !== 'student') {
-                showAlert('formAlert', 'Seuls les élèves peuvent rechercher des professeurs', 'warning');
-                return;
-            }
 
             if (!searchTerm) {
                 showAlert('formAlert', 'Veuillez entrer un terme de recherche', 'danger');
@@ -2478,9 +2474,7 @@
                         </div>
                     </div>
                     <div class="teacher-actions">
-                        <a href="https://wa.me/${teacher.phone}?text=${encodeURIComponent(`Bonjour ${teacher.name}%2C%20je%20suis%20intéressé(e)%20par%20vos%20services%20de%20répétition%20sur%20Cover%20Brain.`)}" class="btn btn-whatsapp" target="_blank">
-                            <i class="fab fa-whatsapp"></i> Contacter
-                        </a>
+    
                         <button class="btn btn-primary" onclick="startConversationWithTeacher('${teacher.id}', '${safeName}')">
                             <i class="fas fa-comment-dots"></i> Discuter
                         </button>
