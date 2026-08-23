@@ -11,8 +11,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
-    <!-- PayPal Hosted Buttons SDK -->
-    <script src="https://www.paypal.com/sdk/js?client-id=BAA1KzRQg95HaI7rmyPMIJIwFheSSiYvt1sXCxODWN6DR72ok36pvOWVP6H78K2i_BUwuKt_8Xao_Wqkqo&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
+    <!-- PayPal SDK (Smart Buttons - nécessaire pour le callback onApprove) -->
+    <script src="https://www.paypal.com/sdk/js?client-id=BAA1KzRQg95HaI7rmyPMIJIwFheSSiYvt1sXCxODWN6DR72ok36pvOWVP6H78K2i_BUwuKt_8Xao_Wqkqo&currency=USD&intent=capture&disable-funding=venmo"></script>
 
     
     <style>
@@ -349,6 +349,12 @@
             box-shadow: 0 4px 15px rgba(74, 111, 165, 0.3);
         }
 
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
         /* ===== SECTIONS ===== */
         .section {
             padding: 4rem 0;
@@ -500,12 +506,14 @@
 
         .teacher-actions, .student-actions {
             display: flex;
+            flex-wrap: wrap;
             gap: 15px;
             margin-top: 2rem;
         }
 
         .teacher-actions .btn, .student-actions .btn {
             flex: 1;
+            min-width: 140px;
             justify-content: center;
             border-radius: 12px;
         }
@@ -933,6 +941,140 @@
             box-shadow: 0 8px 20px rgba(255,255,255,0.2);
         }
 
+        /* ===== MESSAGERIE (CHAT INTERNE) ===== */
+        .messagerie-layout {
+            display: flex;
+            gap: 1.5rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            min-height: 500px;
+        }
+
+        .conversations-list {
+            width: 320px;
+            flex-shrink: 0;
+            border-right: 2px solid #f0f0f0;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .conversation-item {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .conversation-item:hover {
+            background: #f8f9fa;
+        }
+
+        .conversation-item.active {
+            background: rgba(74, 111, 165, 0.1);
+            border-left: 4px solid var(--primary);
+        }
+
+        .conversation-item .conv-name {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .conversation-item .conv-preview {
+            color: #6c757d;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 500px;
+        }
+
+        .chat-header {
+            padding: 1.2rem 1.5rem;
+            border-bottom: 2px solid #f0f0f0;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 450px;
+        }
+
+        .chat-message {
+            max-width: 70%;
+            padding: 10px 16px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .chat-message .chat-message-meta {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        .chat-message.mine {
+            align-self: flex-end;
+            background: var(--gradient-primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-message.theirs {
+            align-self: flex-start;
+            background: #f0f2f5;
+            color: #333;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-input-row {
+            display: flex;
+            gap: 10px;
+            padding: 1.2rem 1.5rem;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .chat-input-row input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 0.95rem;
+        }
+
+        .chat-input-row input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .chat-empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            gap: 1rem;
+        }
+
         /* ===== RESPONSIVE DESIGN ===== */
         @media (max-width: 768px) {
             .header-content {
@@ -998,6 +1140,17 @@
                 padding: 2rem;
                 margin: 1rem;
             }
+
+            .messagerie-layout {
+                flex-direction: column;
+            }
+
+            .conversations-list {
+                width: 100%;
+                max-height: 220px;
+                border-right: none;
+                border-bottom: 2px solid #f0f0f0;
+            }
         }
     </style>
 </head>
@@ -1021,6 +1174,10 @@
                     <!-- BOUTON MODIFIER INFOS -->
                     <button class="nav-tab hidden" onclick="showTab('modifierInfos')" id="navModifyTab">
                         <i class="fas fa-edit"></i> Modifier Infos
+                    </button>
+                    <!-- BOUTON MESSAGERIE -->
+                    <button class="nav-tab hidden" onclick="showTab('messagerie')" id="navMessagesTab">
+                        <i class="fas fa-comment-dots"></i> Messages
                     </button>
                     <button class="nav-tab" onclick="showTab('profil')" id="navProfileTab">
                         <i class="fas fa-user"></i> Profil
@@ -1110,6 +1267,24 @@
             <div class="container">
                 <h2 class="section-title">Modifier Mes Informations</h2>
                 <div id="modifyFormContainer"></div>
+            </div>
+        </section>
+
+        <!-- ===== MESSAGERIE SECTION ===== -->
+        <section class="section hidden" id="messagerie">
+            <div class="container">
+                <h2 class="section-title">Messagerie</h2>
+                <div class="messagerie-layout">
+                    <div class="conversations-list" id="conversationsListContainer">
+                        <div style="padding:1.5rem; color:#6c757d; text-align:center;">Chargement…</div>
+                    </div>
+                    <div class="chat-window" id="chatWindowContainer">
+                        <div class="chat-empty-state">
+                            <i class="fas fa-comments fa-3x"></i>
+                            <p>Sélectionnez une conversation pour commencer à discuter</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -1224,117 +1399,127 @@
                     <div class="payment-info" style="background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border-left-color: #28a745;">
                         <h4><i class="fas fa-credit-card"></i> Paiement unique pour accéder à Cover Brain</h4>
                         <p>Pour utiliser la plateforme (inscription, recherche de répétiteurs, contact), effectuez un <strong>paiement unique</strong> via PayPal ci-dessous. Aucun abonnement récurrent.</p>
-                        <p><strong>Cliquez sur le bouton "Check-Out"</strong></p>
+                        <p id="paymentAmountLabel" style="font-weight:600; margin-top:8px;"></p>
                         <div id="paypal-container-8HTCW5KDCHM4C" style="margin: 1.5rem auto; max-width: 400px;"></div>
-                        <p style="font-size: 0.9rem; color: #555; margin-top: 1rem;"><i class="fas fa-lock"></i> Paiement sécurisé par PayPal. Après validation, vous pouvez vous inscrire ci-dessous.</p>
+                        <div id="paymentSuccessBanner" class="alert alert-success hidden" style="margin-top:1rem;">
+                            <i class="fas fa-check-circle"></i> Paiement confirmé — vous pouvez maintenant vous inscrire ci-dessous.
+                        </div>
+                        <p style="font-size: 0.9rem; color: #555; margin-top: 1rem;"><i class="fas fa-lock"></i> Paiement sécurisé par PayPal. Après validation, le formulaire d'inscription se débloque automatiquement.</p>
                     </div>
 
-                    <div class="user-type">
-                        <label>
-                            <input type="radio" name="userType" value="student" checked onchange="toggleUserType()">
-                            <span><i class="fas fa-user-graduate"></i> Élève</span>
-                        </label>
-                        <label>
-                            <input type="radio" name="userType" value="teacher" onchange="toggleUserType()">
-                            <span><i class="fas fa-chalkboard-teacher"></i> Professeur</span>
-                        </label>
+                    <!-- Message tant que le paiement n'est pas confirmé -->
+                    <div class="alert alert-info" id="paymentRequiredNotice">
+                        <i class="fas fa-info-circle"></i> Le formulaire d'inscription se débloquera automatiquement une fois le paiement PayPal ci-dessus confirmé.
                     </div>
 
-                    <!-- Student Form -->
-                    <form id="studentForm" onsubmit="event.preventDefault(); registerStudent();">
-                        <div class="form-group">
-                            <label for="studentName">Nom complet</label>
-                            <input type="text" id="studentName" class="form-control" required>
+                    <div id="registrationFormsWrapper" class="hidden">
+                        <div class="user-type">
+                            <label>
+                                <input type="radio" name="userType" value="student" checked onchange="toggleUserType()">
+                                <span><i class="fas fa-user-graduate"></i> Élève</span>
+                            </label>
+                            <label>
+                                <input type="radio" name="userType" value="teacher" onchange="toggleUserType()">
+                                <span><i class="fas fa-chalkboard-teacher"></i> Professeur</span>
+                            </label>
                         </div>
-                        <div class="form-group">
-                            <label for="studentPhone">Numéro de téléphone</label>
-                            <input type="tel" id="studentPhone" class="form-control" placeholder="+243..." required>
-                            <small style="color: #6c757d; margin-top: 5px; display: block;">Commencez par + (ex: +243840426427)</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="studentLevel">Niveau scolaire</label>
-                            <select id="studentLevel" class="form-control" required>
-                                <option value="">Sélectionnez</option>
-                                <option value="primaire">Primaire</option>
-                                <option value="secondaire">Secondaire</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="studentClass">Classe</label>
-                            <input type="text" id="studentClass" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="studentSchool">Établissement</label>
-                            <input type="text" id="studentSchool" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="studentAge">Âge</label>
-                            <input type="number" id="studentAge" class="form-control" min="5" max="25" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="studentAddress">Adresse de domicile</label>
-                            <input type="text" id="studentAddress" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="studentPassword">Mot de passe</label>
-                            <input type="password" id="studentPassword" class="form-control" minlength="6" required>
-                            <button type="button" class="password-toggle" onclick="togglePassword('studentPassword')">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-user-plus"></i> S'inscrire
-                        </button>
-                    </form>
 
-                    <!-- Teacher Form -->
-                    <form id="teacherForm" class="hidden" onsubmit="event.preventDefault(); registerTeacher();">
-                        <div class="payment-info">
-                            <h4><i class="fas fa-info-circle"></i> Informations importantes pour les Professeurs</h4>
-                            <p>Après le <strong>paiement unique</strong> via PayPal, votre compte est activé et vous apparaîtrez dans les recherches des élèves.</p>
-                            <p>Assurez-vous de maintenir un service de qualité. Tout manquement pourra entraîner un bannissement.</p>
-                        </div>
-                        <div class="form-group">
-                            <label for="teacherName">Nom complet</label>
-                            <input type="text" id="teacherName" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="teacherPhone">Numéro de téléphone</label>
-                            <input type="tel" id="teacherPhone" class="form-control" placeholder="+243..." required>
-                            <small style="color: #6c757d; margin-top: 5px; display: block;">Commencez par + (ex: +243840426427)</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="teacherSubjects">Matières enseignées</label>
-                            <input type="text" id="teacherSubjects" class="form-control" placeholder="Mathématiques, Physique..." required>
-                        </div>
-                        <div class="form-group">
-                            <label for="teacherClass">Niveaux enseignés</label>
-                            <input type="text" id="teacherClass" class="form-control" placeholder="Primaire, Collège..." required>
-                        </div>
-                        <div class="form-group">
-                            <!-- AJOUT DU CHAMP NOMBRE MAX D'ÉLÈVES -->
-                            <label for="teacherMaxStudents">Nombre maximum d'élèves encadrables</label>
-                            <input type="number" id="teacherMaxStudents" class="form-control" min="1" max="50" value="10" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="teacherSchool">Établissement / Formation</label>
-                            <input type="text" id="teacherSchool" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="teacherAddress">Adresse de domicile</label>
-                            <input type="text" id="teacherAddress" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="teacherPassword">Mot de passe</label>
-                            <input type="password" id="teacherPassword" class="form-control" minlength="6" required>
-                            <button type="button" class="password-toggle" onclick="togglePassword('teacherPassword')">
-                                <i class="fas fa-eye"></i>
+                        <!-- Student Form -->
+                        <form id="studentForm" onsubmit="event.preventDefault(); registerStudent();">
+                            <div class="form-group">
+                                <label for="studentName">Nom complet</label>
+                                <input type="text" id="studentName" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="studentPhone">Numéro de téléphone</label>
+                                <input type="tel" id="studentPhone" class="form-control" placeholder="+243..." required>
+                                <small style="color: #6c757d; margin-top: 5px; display: block;">Commencez par + (ex: +243840426427)</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="studentLevel">Niveau scolaire</label>
+                                <select id="studentLevel" class="form-control" required>
+                                    <option value="">Sélectionnez</option>
+                                    <option value="primaire">Primaire</option>
+                                    <option value="secondaire">Secondaire</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="studentClass">Classe</label>
+                                <input type="text" id="studentClass" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="studentSchool">Établissement</label>
+                                <input type="text" id="studentSchool" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="studentAge">Âge</label>
+                                <input type="number" id="studentAge" class="form-control" min="5" max="25" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="studentAddress">Adresse de domicile</label>
+                                <input type="text" id="studentAddress" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="studentPassword">Mot de passe</label>
+                                <input type="password" id="studentPassword" class="form-control" minlength="6" required>
+                                <button type="button" class="password-toggle" onclick="togglePassword('studentPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="studentSubmitBtn">
+                                <i class="fas fa-user-plus"></i> S'inscrire
                             </button>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-user-plus"></i> S'inscrire
-                        </button>
-                    </form>
+                        </form>
+
+                        <!-- Teacher Form -->
+                        <form id="teacherForm" class="hidden" onsubmit="event.preventDefault(); registerTeacher();">
+                            <div class="payment-info">
+                                <h4><i class="fas fa-info-circle"></i> Informations importantes pour les Professeurs</h4>
+                                <p>Après le <strong>paiement unique</strong> via PayPal, votre compte est activé et vous apparaîtrez dans les recherches des élèves.</p>
+                                <p>Assurez-vous de maintenir un service de qualité. Tout manquement pourra entraîner un bannissement.</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="teacherName">Nom complet</label>
+                                <input type="text" id="teacherName" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="teacherPhone">Numéro de téléphone</label>
+                                <input type="tel" id="teacherPhone" class="form-control" placeholder="+243..." required>
+                                <small style="color: #6c757d; margin-top: 5px; display: block;">Commencez par + (ex: +243840426427)</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="teacherSubjects">Matières enseignées</label>
+                                <input type="text" id="teacherSubjects" class="form-control" placeholder="Mathématiques, Physique..." required>
+                            </div>
+                            <div class="form-group">
+                                <label for="teacherClass">Niveaux enseignés</label>
+                                <input type="text" id="teacherClass" class="form-control" placeholder="Primaire, Collège..." required>
+                            </div>
+                            <div class="form-group">
+                                <!-- AJOUT DU CHAMP NOMBRE MAX D'ÉLÈVES -->
+                                <label for="teacherMaxStudents">Nombre maximum d'élèves encadrables</label>
+                                <input type="number" id="teacherMaxStudents" class="form-control" min="1" max="50" value="10" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="teacherSchool">Établissement / Formation</label>
+                                <input type="text" id="teacherSchool" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="teacherAddress">Adresse de domicile</label>
+                                <input type="text" id="teacherAddress" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="teacherPassword">Mot de passe</label>
+                                <input type="password" id="teacherPassword" class="form-control" minlength="6" required>
+                                <button type="button" class="password-toggle" onclick="togglePassword('teacherPassword')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="teacherSubmitBtn">
+                                <i class="fas fa-user-plus"></i> S'inscrire
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1503,6 +1688,18 @@
         let isLoggedIn = currentUser !== null;
         let platformSettings = {}; // SaaS: paiement unique via PayPal (plus de tarifs par niveau)
 
+        // ===== PAIEMENT UNIQUE (PayPal Smart Buttons) =====
+        // ⚠️ Modifie ce montant selon le prix réel que tu veux facturer.
+        const REGISTRATION_PRICE = { value: "5.00", currency_code: "USD" };
+        let paymentCompleted = localStorage.getItem('coverBrainPaymentCompleted') === 'true';
+        let paypalButtonsRendered = false;
+
+        // ===== MESSAGERIE (chat interne) =====
+        let currentConversationId = null;
+        let messagesUnsubscribe = null;
+        let conversationsUnsubscribe = null;
+        let conversationsCache = {}; // conversationId -> data (pour afficher le nom du contact)
+
         // ===== CRÉATION AUTOMATIQUE DES PARAMÈTRES =====
         async function createDefaultSettings() {
             // SaaS mode: plus de paramètres de tarifs primaire/secondaire
@@ -1520,18 +1717,8 @@
             await createDefaultSettings(); // CRÉE LES PARAMÈTRES SI BESOIN
             await loadPlatformSettings(); // SaaS no-op
             await loadComments();
-            
-            // Render PayPal Hosted Button (paiement unique)
-            try {
-                if (window.paypal && paypal.HostedButtons) {
-                    paypal.HostedButtons({
-                        hostedButtonId: "8HTCW5KDCHM4C",
-                    }).render("#paypal-container-8HTCW5KDCHM4C");
-                    console.log("✅ Bouton PayPal rendu");
-                }
-            } catch (e) {
-                console.warn("PayPal HostedButtons non disponible encore:", e);
-            }
+            updatePaymentUI();
+            renderPayPalButtons();
             
             console.log("✅ Application Cover Brain initialisée (mode SaaS)");
         }
@@ -1553,6 +1740,89 @@
         // ===== MISE À JOUR DE L'AFFICHAGE DES PRIX =====
         function updatePriceDisplays() {
             // SaaS: plus d'affichage de tarifs par niveau
+        }
+
+        // ===== PAIEMENT UNIQUE PAYPAL (Smart Buttons + onApprove) =====
+        // Remarque importante : les "Hosted Buttons" PayPal ne déclenchent PAS de callback
+        // onApprove côté client, donc il était impossible de savoir si le paiement avait
+        // réellement eu lieu avant d'inscrire quelqu'un. On utilise ici les boutons PayPal
+        // "Smart Buttons" (paypal.Buttons) qui exposent createOrder/onApprove, et on ne
+        // débloque le formulaire d'inscription qu'après confirmation réelle du paiement.
+        function updatePaymentUI() {
+            const notice = document.getElementById('paymentRequiredNotice');
+            const wrapper = document.getElementById('registrationFormsWrapper');
+            const successBanner = document.getElementById('paymentSuccessBanner');
+            const paypalContainer = document.getElementById('paypal-container-8HTCW5KDCHM4C');
+            const amountLabel = document.getElementById('paymentAmountLabel');
+            const studentBtn = document.getElementById('studentSubmitBtn');
+            const teacherBtn = document.getElementById('teacherSubmitBtn');
+
+            if (amountLabel) {
+                amountLabel.textContent = `Montant à payer : ${REGISTRATION_PRICE.value} ${REGISTRATION_PRICE.currency_code}`;
+            }
+
+            if (paymentCompleted) {
+                if (notice) notice.classList.add('hidden');
+                if (wrapper) wrapper.classList.remove('hidden');
+                if (successBanner) successBanner.classList.remove('hidden');
+                if (paypalContainer) paypalContainer.classList.add('hidden');
+                if (studentBtn) studentBtn.disabled = false;
+                if (teacherBtn) teacherBtn.disabled = false;
+            } else {
+                if (notice) notice.classList.remove('hidden');
+                if (wrapper) wrapper.classList.add('hidden');
+                if (successBanner) successBanner.classList.add('hidden');
+                if (paypalContainer) paypalContainer.classList.remove('hidden');
+                if (studentBtn) studentBtn.disabled = true;
+                if (teacherBtn) teacherBtn.disabled = true;
+            }
+        }
+
+        function renderPayPalButtons() {
+            const container = document.getElementById('paypal-container-8HTCW5KDCHM4C');
+            if (!container || paymentCompleted || paypalButtonsRendered) return;
+
+            try {
+                if (window.paypal && paypal.Buttons) {
+                    paypal.Buttons({
+                        style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'checkout' },
+                        createOrder: function(data, actions) {
+                            return actions.order.create({
+                                purchase_units: [{
+                                    amount: {
+                                        value: REGISTRATION_PRICE.value,
+                                        currency_code: REGISTRATION_PRICE.currency_code
+                                    },
+                                    description: "Accès unique à la plateforme Cover Brain"
+                                }]
+                            });
+                        },
+                        onApprove: function(data, actions) {
+                            return actions.order.capture().then(function(details) {
+                                paymentCompleted = true;
+                                localStorage.setItem('coverBrainPaymentCompleted', 'true');
+                                localStorage.setItem('coverBrainPaymentOrderId', details.id || data.orderID || '');
+                                updatePaymentUI();
+                                showAlert('formAlert', 'Paiement confirmé ! Vous pouvez maintenant vous inscrire.', 'success');
+                            });
+                        },
+                        onCancel: function() {
+                            showAlert('formAlert', 'Paiement annulé.', 'danger');
+                        },
+                        onError: function(err) {
+                            console.error('Erreur PayPal:', err);
+                            showAlert('formAlert', 'Une erreur est survenue avec le paiement PayPal. Veuillez réessayer.', 'danger');
+                        }
+                    }).render('#paypal-container-8HTCW5KDCHM4C');
+                    paypalButtonsRendered = true;
+                    console.log("✅ Boutons PayPal (Smart Buttons) rendus");
+                } else {
+                    console.warn("PayPal SDK non disponible pour le moment, nouvelle tentative...");
+                    setTimeout(renderPayPalButtons, 500);
+                }
+            } catch (e) {
+                console.warn("Erreur lors du rendu des boutons PayPal:", e);
+            }
         }
 
         // ===== FONCTION POUR AFFICHER/MASQUER LE MOT DE PASSE =====
@@ -1607,16 +1877,11 @@
                 document.getElementById('resultsSection').classList.add('hidden');
             } else if (tabId === 'adminSection') {
                 loadAdminPanel();
+            } else if (tabId === 'messagerie') {
+                loadConversations();
             } else if (tabId === 'inscription') {
-                // Re-render PayPal if needed when showing inscription
-                setTimeout(() => {
-                    const container = document.getElementById('paypal-container-8HTCW5KDCHM4C');
-                    if (container && container.children.length === 0 && window.paypal && paypal.HostedButtons) {
-                        paypal.HostedButtons({
-                            hostedButtonId: "8HTCW5KDCHM4C",
-                        }).render("#paypal-container-8HTCW5KDCHM4C");
-                    }
-                }, 300);
+                updatePaymentUI();
+                setTimeout(renderPayPalButtons, 200);
             }
             
             document.getElementById('moreMenu').classList.remove('show');
@@ -1630,6 +1895,11 @@
         }
 
         async function registerStudent() {
+            if (!paymentCompleted) {
+                showAlert('formAlert', 'Vous devez d\'abord effectuer le paiement unique via PayPal avant de vous inscrire', 'danger');
+                return;
+            }
+
             if (!document.getElementById('acceptTerms').checked) {
                 showAlert('formAlert', 'Vous devez accepter les conditions d\'utilisation pour vous inscrire', 'danger');
                 return;
@@ -1644,6 +1914,7 @@
                 age: parseInt(document.getElementById('studentAge').value),
                 address: document.getElementById('studentAddress').value,
                 password: document.getElementById('studentPassword').value,
+                paymentOrderId: localStorage.getItem('coverBrainPaymentOrderId') || null,
                 createdAt: new Date()
             };
 
@@ -1674,6 +1945,11 @@
         }
 
         async function registerTeacher() {
+            if (!paymentCompleted) {
+                showAlert('formAlert', 'Vous devez d\'abord effectuer le paiement unique via PayPal avant de vous inscrire', 'danger');
+                return;
+            }
+
             if (!document.getElementById('acceptTerms').checked) {
                 showAlert('formAlert', 'Vous devez accepter les conditions d\'utilisation pour vous inscrire', 'danger');
                 return;
@@ -1693,6 +1969,7 @@
                 rating: 0,
                 totalRatings: 0,
                 verified: true,
+                paymentOrderId: localStorage.getItem('coverBrainPaymentOrderId') || null,
                 createdAt: new Date()
             };
 
@@ -2162,6 +2439,7 @@
 
             teachers.forEach(teacher => {
                 const ratingStars = generateRatingStars(teacher.rating);
+                const safeName = teacher.name.replace(/'/g, "\\'");
 
                 const teacherCard = document.createElement('div');
                 teacherCard.className = 'teacher-card';
@@ -2203,6 +2481,9 @@
                         <a href="https://wa.me/${teacher.phone}?text=${encodeURIComponent(`Bonjour ${teacher.name}%2C%20je%20suis%20intéressé(e)%20par%20vos%20services%20de%20répétition%20sur%20Cover%20Brain.`)}" class="btn btn-whatsapp" target="_blank">
                             <i class="fab fa-whatsapp"></i> Contacter
                         </a>
+                        <button class="btn btn-primary" onclick="startConversationWithTeacher('${teacher.id}', '${safeName}')">
+                            <i class="fas fa-comment-dots"></i> Discuter
+                        </button>
                         <button class="btn btn-primary" onclick="rateTeacher('${teacher.id}')">
                             <i class="fas fa-star"></i> Noter
                         </button>
@@ -2280,6 +2561,197 @@
                 console.error('Erreur notation:', error);
                 alert('Erreur lors de la notation');
             }
+        }
+
+        // ===== MESSAGERIE (CHAT INTERNE ÉLÈVE <-> PROFESSEUR) =====
+        // La collection "conversations" et sa sous-collection "messages" se créent
+        // automatiquement dans Firestore dès le premier message (aucune configuration
+        // manuelle nécessaire côté base de données).
+
+        function getConversationId(studentId, teacherId) {
+            return `${studentId}_${teacherId}`;
+        }
+
+        // Appelé depuis les résultats de recherche (élève -> professeur)
+        async function startConversationWithTeacher(teacherId, teacherName) {
+            if (!isLoggedIn) {
+                showAlert('formAlert', 'Connectez-vous pour discuter avec un professeur', 'danger');
+                openLoginModal();
+                return;
+            }
+            if (currentUser.type !== 'student') {
+                showAlert('formAlert', 'Seuls les élèves peuvent démarrer une conversation depuis la recherche', 'warning');
+                return;
+            }
+
+            const conversationId = getConversationId(currentUser.id, teacherId);
+
+            try {
+                await db.collection('conversations').doc(conversationId).set({
+                    participants: [currentUser.id, teacherId],
+                    studentId: currentUser.id,
+                    studentName: currentUser.name,
+                    teacherId: teacherId,
+                    teacherName: teacherName,
+                    updatedAt: new Date(),
+                    lastMessage: ''
+                }, { merge: true });
+
+                showTab('messagerie');
+                openConversation(conversationId, teacherName);
+            } catch (error) {
+                console.error('Erreur création conversation:', error);
+                showAlert('formAlert', 'Impossible de démarrer la conversation', 'danger');
+            }
+        }
+
+        // Charge la liste des conversations de l'utilisateur connecté (temps réel)
+        function loadConversations() {
+            const listContainer = document.getElementById('conversationsListContainer');
+
+            if (!currentUser) {
+                listContainer.innerHTML = `
+                    <div style="padding:1.5rem; text-align:center; color:#6c757d;">
+                        Connectez-vous pour voir vos messages
+                    </div>
+                `;
+                return;
+            }
+
+            if (conversationsUnsubscribe) {
+                conversationsUnsubscribe();
+                conversationsUnsubscribe = null;
+            }
+
+            listContainer.innerHTML = `<div style="padding:1.5rem; color:#6c757d; text-align:center;">Chargement…</div>`;
+
+            conversationsUnsubscribe = db.collection('conversations')
+                .where('participants', 'array-contains', currentUser.id)
+                .onSnapshot(function(snapshot) {
+                    const conversations = [];
+                    snapshot.forEach(doc => {
+                        conversationsCache[doc.id] = doc.data();
+                        conversations.push({ id: doc.id, ...doc.data() });
+                    });
+
+                    // Tri côté client par date de dernière mise à jour (évite un index composite Firestore)
+                    conversations.sort((a, b) => {
+                        const ta = a.updatedAt && a.updatedAt.toMillis ? a.updatedAt.toMillis() : 0;
+                        const tb = b.updatedAt && b.updatedAt.toMillis ? b.updatedAt.toMillis() : 0;
+                        return tb - ta;
+                    });
+
+                    if (conversations.length === 0) {
+                        listContainer.innerHTML = `
+                            <div style="padding:1.5rem; text-align:center; color:#6c757d;">
+                                <i class="fas fa-comment-slash fa-2x" style="margin-bottom:10px;"></i>
+                                <p>Aucune conversation pour le moment</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    listContainer.innerHTML = '';
+                    conversations.forEach(conv => {
+                        const otherName = currentUser.type === 'student' ? conv.teacherName : conv.studentName;
+                        const item = document.createElement('div');
+                        item.className = 'conversation-item' + (conv.id === currentConversationId ? ' active' : '');
+                        item.onclick = () => openConversation(conv.id, otherName);
+                        item.innerHTML = `
+                            <div class="conv-name"><i class="fas fa-user-circle"></i> ${otherName || 'Utilisateur'}</div>
+                            <div class="conv-preview">${conv.lastMessage ? conv.lastMessage : 'Nouvelle conversation'}</div>
+                        `;
+                        listContainer.appendChild(item);
+                    });
+                }, function(error) {
+                    console.error('Erreur chargement conversations:', error);
+                    listContainer.innerHTML = `<div style="padding:1.5rem; color:#dc3545; text-align:center;">Erreur de chargement des conversations</div>`;
+                });
+        }
+
+        // Ouvre une conversation et écoute les messages en temps réel
+        function openConversation(conversationId, otherName) {
+            currentConversationId = conversationId;
+
+            // Rafraîchir le style "actif" dans la liste
+            document.querySelectorAll('.conversation-item').forEach(el => el.classList.remove('active'));
+
+            const chatWindow = document.getElementById('chatWindowContainer');
+            chatWindow.innerHTML = `
+                <div class="chat-header"><i class="fas fa-user-circle"></i> ${otherName || 'Conversation'}</div>
+                <div class="chat-messages" id="chatMessages"></div>
+                <form class="chat-input-row" onsubmit="event.preventDefault(); sendMessage();">
+                    <input type="text" id="chatMessageInput" placeholder="Écrivez votre message..." autocomplete="off">
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i></button>
+                </form>
+            `;
+
+            if (messagesUnsubscribe) {
+                messagesUnsubscribe();
+                messagesUnsubscribe = null;
+            }
+
+            messagesUnsubscribe = db.collection('conversations').doc(conversationId)
+                .collection('messages')
+                .orderBy('createdAt', 'asc')
+                .onSnapshot(function(snapshot) {
+                    const messagesContainer = document.getElementById('chatMessages');
+                    if (!messagesContainer) return; // l'utilisateur a changé d'onglet
+                    messagesContainer.innerHTML = '';
+
+                    snapshot.forEach(doc => {
+                        const msg = doc.data();
+                        const isMine = msg.senderId === currentUser.id;
+                        const bubble = document.createElement('div');
+                        bubble.className = 'chat-message ' + (isMine ? 'mine' : 'theirs');
+                        const time = msg.createdAt && msg.createdAt.toDate ? msg.createdAt.toDate().toLocaleString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+                        bubble.innerHTML = `
+                            <div>${escapeHtml(msg.text || '')}</div>
+                            <div class="chat-message-meta">${isMine ? 'Vous' : (msg.senderName || '')} • ${time}</div>
+                        `;
+                        messagesContainer.appendChild(bubble);
+                    });
+
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }, function(error) {
+                    console.error('Erreur chargement messages:', error);
+                });
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chatMessageInput');
+            if (!input) return;
+            const text = input.value.trim();
+            if (!text || !currentConversationId || !currentUser) return;
+
+            input.value = '';
+
+            try {
+                const convRef = db.collection('conversations').doc(currentConversationId);
+
+                await convRef.collection('messages').add({
+                    senderId: currentUser.id,
+                    senderType: currentUser.type,
+                    senderName: currentUser.name,
+                    text: text,
+                    createdAt: new Date()
+                });
+
+                await convRef.set({
+                    lastMessage: text,
+                    updatedAt: new Date()
+                }, { merge: true });
+
+            } catch (error) {
+                console.error('Erreur envoi message:', error);
+                showAlert('formAlert', 'Erreur lors de l\'envoi du message', 'danger');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         // ===== COMMENTAIRES =====
@@ -2557,6 +3029,9 @@
             currentUser = null;
             isLoggedIn = false;
             localStorage.removeItem('coverBrainCurrentUser');
+            if (messagesUnsubscribe) { messagesUnsubscribe(); messagesUnsubscribe = null; }
+            if (conversationsUnsubscribe) { conversationsUnsubscribe(); conversationsUnsubscribe = null; }
+            currentConversationId = null;
             checkLoginStatus();
             showTab('accueil');
             showAlert('formAlert', 'Vous avez été déconnecté avec succès', 'success');
@@ -2705,6 +3180,8 @@
 
                 // Afficher l'onglet modifier infos pour tous les utilisateurs connectés
                 document.getElementById('navModifyTab').classList.remove('hidden');
+                // Afficher l'onglet messagerie pour tous les utilisateurs connectés
+                document.getElementById('navMessagesTab').classList.remove('hidden');
 
                 // Afficher l'onglet admin si l'utilisateur est admin
                 if (currentUser.type === 'admin') {
@@ -2719,6 +3196,7 @@
                 document.getElementById('logoutNavItem').classList.add('hidden');
                 document.getElementById('loginNavItem').classList.remove('hidden');
                 document.getElementById('navModifyTab').classList.add('hidden');
+                document.getElementById('navMessagesTab').classList.add('hidden');
                 document.getElementById('adminNavTab').classList.add('hidden');
                 document.getElementById('adminMenuLink').classList.add('hidden');
             }
